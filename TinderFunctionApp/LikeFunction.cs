@@ -16,7 +16,8 @@ namespace TinderFunctionApp
         {
             var authentication = new Authentication()
             {
-                facebook_token = "EAAGm0PX4ZCpsBANKZAmf7o3WvmWVeLRKBP4HoR431kIZCZCau78FvwMLVy8rPKfPLIH2YwZAa3hya2KgmldcZCdizG4ZB3Gdyjo1TuVxxdCOqxG68ggdP5FFrfZAscxZAMbZCYh8jSKTHMLkjHDEcAyV4z8WqSrgoPub3edTzHGqUWeNVN3kgZB9G2mUwU9B4ickv78s8XzUqTWzWcK4p6RLHFPNapPsRs1RvCqR00UEaiZBg9WZBDPYBQjyZAzJ60um2EIJ0ZD",
+                //Currently fetching this manually
+                facebook_token = "",
                 //facebook_id = "506473474"
             };
 
