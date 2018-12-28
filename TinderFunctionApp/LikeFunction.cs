@@ -1,11 +1,10 @@
-using System;
-using System.Globalization;
-using System.Linq;
+using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
+using Newtonsoft.Json.Linq;
+using TinderFunctionApp.Json;
 
 namespace TinderFunctionApp
 {
@@ -14,11 +13,11 @@ namespace TinderFunctionApp
         [FunctionName("LikeFunction")]
         public static async Task Run([TimerTrigger("0 */1 * * * *")]TimerInfo myTimer, TraceWriter log)
         {
-            var authentication = new Authentication()
+            var authentication = new Auth()
             {
                 //Currently fetching this manually
                 facebook_token = "",
-                //facebook_id = "506473474"
+                facebook_id = "506473474"
             };
 
             using (var client = new HttpClient())
@@ -26,12 +25,13 @@ namespace TinderFunctionApp
                 try
                 {
                     var response = await client.PostAsJsonAsync("https://api.gotinder.com/auth", authentication);
-                    client.DefaultRequestHeaders.Add("Anonymous", authentication.facebook_token);
-                    var recs = await client.GetAsync("https://api.gotinder.com/user/recs");
-
-                    HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Get, "https://api.gotinder.com/user/recs");
-                    requestMessage.Headers.Add("x-auth-token", authentication.facebook_token);
-                    var reso = await client.SendAsync(requestMessage);
+                    if (response.StatusCode == HttpStatusCode.OK)
+                    {
+                        var responseBody = await response.Content.ReadAsStringAsync();
+                        var tinderToken = JObject.Parse(responseBody).GetValue("token").ToString();
+                        client.DefaultRequestHeaders.Add("X-Auth-Token", tinderToken);
+                        var recommendations = await client.GetAsync("https://api.gotinder.com/user/recs");
+                    }
                 }
                 catch (HttpRequestException e)
                 {
@@ -39,16 +39,5 @@ namespace TinderFunctionApp
                 }
             }
         }
-    }
-
-    public class Authentication
-    {
-        public string facebook_token { get; set; }
-        public string facebook_id { get; set; }
-    }
-
-    public class Updates
-    {
-        public string last_activity_date { get; set; }
     }
 }
