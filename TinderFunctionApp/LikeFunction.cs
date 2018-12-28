@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Newtonsoft.Json.Linq;
+using TinderFunctionApp.Helpers;
 using TinderFunctionApp.Json;
 
 namespace TinderFunctionApp
@@ -15,8 +16,7 @@ namespace TinderFunctionApp
         {
             var authentication = new Auth()
             {
-                //Currently fetching this manually
-                facebook_token = "",
+                facebook_token = FacebookHelper.GetFacebookToken("", ""),
                 facebook_id = "506473474"
             };
 

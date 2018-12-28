@@ -5,6 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.24" />
+    <PackageReference Include="SimpleBrowser" Version="0.5.79" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
