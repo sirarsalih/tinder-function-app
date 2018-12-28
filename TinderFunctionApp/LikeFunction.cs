@@ -1,10 +1,12 @@
+using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.Serialization.Json;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Newtonsoft.Json.Linq;
-using TinderFunctionApp.Helpers;
 using TinderFunctionApp.Json;
 
 namespace TinderFunctionApp
@@ -14,23 +16,36 @@ namespace TinderFunctionApp
         [FunctionName("LikeFunction")]
         public static async Task Run([TimerTrigger("0 */1 * * * *")]TimerInfo myTimer, TraceWriter log)
         {
-            var authentication = new Auth()
-            {
-                facebook_token = FacebookHelper.GetFacebookToken("", ""),
-                facebook_id = "506473474"
-            };
-
             using (var client = new HttpClient())
             {
                 try
                 {
-                    var response = await client.PostAsJsonAsync("https://api.gotinder.com/auth", authentication);
-                    if (response.StatusCode == HttpStatusCode.OK)
+                    var authentication = new Auth()
                     {
-                        var responseBody = await response.Content.ReadAsStringAsync();
-                        var tinderToken = JObject.Parse(responseBody).GetValue("token").ToString();
+                        facebook_token = "",
+                        facebook_id = "506473474"
+                    };
+                    var auth = await client.PostAsJsonAsync("https://api.gotinder.com/auth", authentication);
+                    if (auth.StatusCode == HttpStatusCode.OK)
+                    {
+                        var authBody = await auth.Content.ReadAsStringAsync();
+                        var tinderToken = JObject.Parse(authBody).GetValue("token").ToString();
                         client.DefaultRequestHeaders.Add("X-Auth-Token", tinderToken);
-                        var recommendations = await client.GetAsync("https://api.gotinder.com/user/recs");
+                        var recs = await client.GetAsync("https://api.gotinder.com/user/recs");
+                        var recsBody = await recs.Content.ReadAsStringAsync();
+                        var resultsJson = JToken.Parse(recsBody).Last().ToString();
+                        var encloseResultsJson = "{" + resultsJson + "}";
+                        var ms = new MemoryStream(System.Text.Encoding.ASCII.GetBytes(encloseResultsJson)) { Position = 0 };
+                        var ser = new DataContractJsonSerializer(typeof(Results));
+                        var results = (Results)ser.ReadObject(ms);
+                        foreach (var result in results.results)
+                        {
+                            var like = await client.GetAsync("https://api.gotinder.com/like/"+result._id);
+                            if (like.StatusCode == HttpStatusCode.OK)
+                            {
+                                log.Info($"Successfully liked {result.name} who is {result.distance_mi} Miles away from my current location.");
+                            }
+                        }
                     }
                 }
                 catch (HttpRequestException e)
