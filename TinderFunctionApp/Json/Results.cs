@@ -13,4 +13,17 @@ namespace TinderFunctionApp.Json
         [DataMember]
         public List<Result> results { get; set; }
     }
+
+    [DataContract]
+    public class Result
+    {
+        [DataMember]
+        public string _id { get; set; }
+
+        [DataMember]
+        public string name { get; set; }
+
+        [DataMember]
+        public string distance_mi { get; set; }
+    }
 }

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using SimpleBrowser;
+﻿using SimpleBrowser;
 
 namespace TinderFunctionApp.Helpers
 {
@@ -18,7 +12,7 @@ namespace TinderFunctionApp.Helpers
             var browser = new Browser { UserAgent = USER_AGENT };
             browser.Navigate(URL);
 
-            // Enters email, password and logins
+            // Enters email and password then logs in
             browser.Find(ElementType.TextField, FindBy.Name, "email").Value = email;
             browser.Find("u_0_2").Value = password;
             browser.Find(ElementType.Button, FindBy.Name, "login").Click();
@@ -26,9 +20,7 @@ namespace TinderFunctionApp.Helpers
             // Tinder is already authorized prompt, presses ok
             browser.Find("u_0_1").Click();
 
-            var url = browser.Url;
-
-            // Cut out the token from the html
+            // Extract the token from the html and return it
             var browserHtml = browser.CurrentHtml;
             var indexFrom = browserHtml.IndexOf("access_token=") + "access_token=".Length;
             var indexTo = browserHtml.LastIndexOf("&expires_in");
