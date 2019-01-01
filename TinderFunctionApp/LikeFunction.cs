@@ -20,7 +20,7 @@ namespace TinderFunctionApp
         private const string _likeUrl = "https://api.gotinder.com/like/_id";
 
         [FunctionName("LikeFunction")]
-        public static async Task Run([TimerTrigger("0 */1 * * * *")]TimerInfo myTimer, TraceWriter log, ExecutionContext context)
+        public static async Task Run([TimerTrigger("0 */10 * * * *")]TimerInfo myTimer, TraceWriter log, ExecutionContext context)
         {
             using (var client = new HttpClient()) {
                 try {
