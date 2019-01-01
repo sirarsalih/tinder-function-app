@@ -12,15 +12,20 @@ using TinderFunctionApp.Json;
 
 namespace TinderFunctionApp
 {
+    // Tinder API documentation sources:
+    // https://github.com/fbessez/Tinder
+    // https://gist.github.com/rtt/10403467
+
     public static class LikeFunction
     {
         private const string _authUrl = "https://api.gotinder.com/auth";
         private const string _recsUrl = "https://api.gotinder.com/user/recs";
         private const string _superLikeUrl = "https://api.gotinder.com/like/_id/super";
         private const string _likeUrl = "https://api.gotinder.com/like/_id";
+        private const string _matchUrl = "https://api.gotinder.com/matches/_id";
 
         [FunctionName("LikeFunction")]
-        public static async Task Run([TimerTrigger("0 */10 * * * *")]TimerInfo myTimer, TraceWriter log, ExecutionContext context)
+        public static async Task Run([TimerTrigger("0 */15 * * * *")]TimerInfo myTimer, TraceWriter log, ExecutionContext context)
         {
             using (var client = new HttpClient()) {
                 try {
@@ -51,6 +56,8 @@ namespace TinderFunctionApp
                                         var superLike = await client.PostAsync(_superLikeUrl.Replace("_id", result._id), null);
                                         if (superLike.StatusCode == HttpStatusCode.OK) {
                                             log.Info($"Successfully super liked {result.name} who is {result.distance_mi} Miles away from my current location.");
+                                            // TODO: Work in progress
+                                            //var match = await client.GetAsync(_matchUrl.Replace("_id", result._id));
                                         }
                                     } else {
                                         var like = await client.GetAsync(_likeUrl.Replace("_id", result._id));
