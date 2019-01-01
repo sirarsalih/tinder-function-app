@@ -47,7 +47,7 @@ namespace TinderFunctionApp
                                 log.Info($"Too many queries for new users in a too short period of time. Try again later.");
                             } else {
                                 var resultsJson = JToken.Parse(recsBody).Last().ToString();
-                                var encloseResultsJson = "{" + resultsJson + "}";
+                                var encloseResultsJson = $"{{{resultsJson}}}";
                                 var ms = new MemoryStream(System.Text.Encoding.ASCII.GetBytes(encloseResultsJson)) { Position = 0 };
                                 var ser = new DataContractJsonSerializer(typeof(Results));
                                 var results = (Results)ser.ReadObject(ms);
@@ -56,13 +56,13 @@ namespace TinderFunctionApp
                                         var superLike = await client.PostAsync(_superLikeUrl.Replace("_id", result._id), null);
                                         if (superLike.StatusCode == HttpStatusCode.OK) {
                                             log.Info($"Successfully super liked {result.name} who is {result.distance_mi} Miles away from my current location.");
-                                            // TODO: Work in progress
-                                            //var match = await client.GetAsync(_matchUrl.Replace("_id", result._id));
+                                            await GetMatchAsync(client, log, result._id, result.name);
                                         }
                                     } else {
                                         var like = await client.GetAsync(_likeUrl.Replace("_id", result._id));
                                         if (like.StatusCode == HttpStatusCode.OK) {
                                             log.Info($"Successfully liked {result.name} who is {result.distance_mi} Miles away from my current location.");
+                                            await GetMatchAsync(client, log, result._id, result.name);
                                         }
                                     }
                                 }
@@ -76,6 +76,15 @@ namespace TinderFunctionApp
                     log.Error($"Exception caught! Message :{e.Message}.");
                 }
             }
+        }
+
+        private async static Task<HttpResponseMessage> GetMatchAsync(HttpClient client, TraceWriter log, string id, string name)
+        {
+            var match = await client.GetAsync(_matchUrl.Replace("_id", id));
+            if (match.StatusCode == HttpStatusCode.OK) {
+                log.Info($"Match with {name}!");
+            }
+            return match;
         }
     }
 }
