@@ -14,8 +14,13 @@ namespace TinderFunctionApp
 {
     public static class LikeFunction
     {
+        private const string _authUrl = "https://api.gotinder.com/auth";
+        private const string _recsUrl = "https://api.gotinder.com/user/recs";
+        private const string _superLikeUrl = "https://api.gotinder.com/like/_id/super";
+        private const string _likeUrl = "https://api.gotinder.com/like/_id";
+
         [FunctionName("LikeFunction")]
-        public static async Task Run([TimerTrigger("0 */10 * * * *")]TimerInfo myTimer, TraceWriter log, ExecutionContext context)
+        public static async Task Run([TimerTrigger("0 */1 * * * *")]TimerInfo myTimer, TraceWriter log, ExecutionContext context)
         {
             using (var client = new HttpClient()) {
                 try {
@@ -24,14 +29,14 @@ namespace TinderFunctionApp
                      .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
                      .AddEnvironmentVariables()
                      .Build();
-                    var response = await client.PostAsJsonAsync("https://api.gotinder.com/auth", new Auth() { facebook_id = config["FacebookId"], facebook_token = config["FacebookToken"]});
+                    var response = await client.PostAsJsonAsync(_authUrl, new Auth() { facebook_id = config["FacebookId"], facebook_token = config["FacebookToken"]});
                     switch (response.StatusCode) {
                         case HttpStatusCode.OK:
                             log.Info($"Successful authentication. {(int)response.StatusCode} {response.ReasonPhrase}.");
                             var responseBody = await response.Content.ReadAsStringAsync();
                             var tinderToken = JObject.Parse(responseBody).GetValue("token").ToString();
                             client.DefaultRequestHeaders.Add("X-Auth-Token", tinderToken);
-                            var recs = await client.GetAsync("https://api.gotinder.com/user/recs");
+                            var recs = await client.GetAsync(_recsUrl);
                             var recsBody = await recs.Content.ReadAsStringAsync();
                             if(recsBody.Contains("recs timeout")) {
                                 log.Info($"Too many queries for new users in a too short period of time. Try again later.");
@@ -43,12 +48,12 @@ namespace TinderFunctionApp
                                 var results = (Results)ser.ReadObject(ms);
                                 foreach (var result in results.results) {
                                     if(new System.Random().NextDouble() >= 0.5) {
-                                        var superLike = await client.PostAsync("https://api.gotinder.com/like/" + result._id + "/super", null);
+                                        var superLike = await client.PostAsync(_superLikeUrl.Replace("_id", result._id), null);
                                         if (superLike.StatusCode == HttpStatusCode.OK) {
                                             log.Info($"Successfully super liked {result.name} who is {result.distance_mi} Miles away from my current location.");
                                         }
                                     } else {
-                                        var like = await client.GetAsync("https://api.gotinder.com/like/" + result._id);
+                                        var like = await client.GetAsync(_likeUrl.Replace("_id", result._id));
                                         if (like.StatusCode == HttpStatusCode.OK) {
                                             log.Info($"Successfully liked {result.name} who is {result.distance_mi} Miles away from my current location.");
                                         }
