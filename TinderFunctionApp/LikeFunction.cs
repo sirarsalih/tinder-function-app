@@ -15,7 +15,7 @@ namespace TinderFunctionApp
     public static class LikeFunction
     {
         [FunctionName("LikeFunction")]
-        public static async Task Run([TimerTrigger("0 */15 * * * *")]TimerInfo myTimer, TraceWriter log, ExecutionContext context)
+        public static async Task Run([TimerTrigger("0 */10 * * * *")]TimerInfo myTimer, TraceWriter log, ExecutionContext context)
         {
             using (var client = new HttpClient()) {
                 try {
@@ -42,9 +42,16 @@ namespace TinderFunctionApp
                                 var ser = new DataContractJsonSerializer(typeof(Results));
                                 var results = (Results)ser.ReadObject(ms);
                                 foreach (var result in results.results) {
-                                    var like = await client.GetAsync("https://api.gotinder.com/like/" + result._id);
-                                    if (like.StatusCode == HttpStatusCode.OK) {
-                                        log.Info($"Successfully liked {result.name} who is {result.distance_mi} Miles away from my current location.");
+                                    if(new System.Random().NextDouble() >= 0.5) {
+                                        var superLike = await client.PostAsync("https://api.gotinder.com/like/" + result._id + "/super", null);
+                                        if (superLike.StatusCode == HttpStatusCode.OK) {
+                                            log.Info($"Successfully super liked {result.name} who is {result.distance_mi} Miles away from my current location.");
+                                        }
+                                    } else {
+                                        var like = await client.GetAsync("https://api.gotinder.com/like/" + result._id);
+                                        if (like.StatusCode == HttpStatusCode.OK) {
+                                            log.Info($"Successfully liked {result.name} who is {result.distance_mi} Miles away from my current location.");
+                                        }
                                     }
                                 }
                             }                            
