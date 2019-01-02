@@ -3,4 +3,4 @@ An automated Tinder app running as an Azure Function in the cloud.
 
 ## Auto like and super like
 
-The app runs Azure at specific intervals, auto liking and super liking recommendations from Tinder.
+The app runs in Azure at specific intervals, auto liking and super liking recommendations from Tinder.
