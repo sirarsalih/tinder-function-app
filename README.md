@@ -8,4 +8,5 @@ The app runs in Azure at specific intervals, auto liking and super liking recomm
 ## Tinder API documentation sources
 
 https://github.com/fbessez/Tinder
+<br/>
 https://gist.github.com/rtt/10403467
