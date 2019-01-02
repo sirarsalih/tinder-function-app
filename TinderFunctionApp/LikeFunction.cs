@@ -25,7 +25,7 @@ namespace TinderFunctionApp
         private const string _matchUrl = "https://api.gotinder.com/matches/_id";
 
         [FunctionName("LikeFunction")]
-        public static async Task Run([TimerTrigger("0 */1 * * * *")]TimerInfo myTimer, TraceWriter log, ExecutionContext context)
+        public static async Task Run([TimerTrigger("0 */15 * * * *")]TimerInfo myTimer, TraceWriter log, ExecutionContext context)
         {
             using (var client = new HttpClient()) {
                 try {
@@ -44,7 +44,7 @@ namespace TinderFunctionApp
                             var recs = await client.GetAsync(_recsUrl);
                             var recsBody = await recs.Content.ReadAsStringAsync();
                             if(recsBody.Contains("recs timeout")) {
-                                log.Info($"Too many queries for new users in a too short period of time. Try again later.");
+                                log.Info("Too many queries for new users in a too short period of time. Try again later.");
                             } else {
                                 var resultsJson = JToken.Parse(recsBody).Last().ToString();
                                 var encloseResultsJson = $"{{{resultsJson}}}";
