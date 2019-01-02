@@ -14,10 +14,6 @@ using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 
 namespace TinderFunctionApp
 {
-    // Tinder API documentation sources:
-    // https://github.com/fbessez/Tinder
-    // https://gist.github.com/rtt/10403467
-
     public static class LikeFunction
     {
         private const string _authUrl = "https://api.gotinder.com/auth";
