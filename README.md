@@ -1,6 +1,8 @@
 # tinder-function-app
 An automated Tinder app running as an Azure Function in the cloud.
 
+Running at: https://tinderfunctionapp.azurewebsites.net/
+
 ## Auto like and super like
 
 The app runs in Azure at specific intervals, auto liking and super liking recommendations from Tinder.
