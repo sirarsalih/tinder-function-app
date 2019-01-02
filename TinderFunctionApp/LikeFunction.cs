@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -22,8 +23,6 @@ namespace TinderFunctionApp
         private const string _likeUrl = "https://api.gotinder.com/like/_id";
         private const string _matchUrl = "https://api.gotinder.com/matches/_id";
 
-        private const int _pauseMilliseconds = 900000;
-
         [FunctionName("LikeFunction")]
         public static async Task Run([TimerTrigger("0 */1 * * * *")]TimerInfo myTimer, TraceWriter log, ExecutionContext context)
         {
@@ -44,8 +43,8 @@ namespace TinderFunctionApp
                             var recs = await client.GetAsync(_recsUrl);
                             var recsBody = await recs.Content.ReadAsStringAsync();
                             if(recsBody.Contains("recs timeout") || recsBody.Contains("recs exhausted")) {
-                                log.Info($"Too many queries for new users in a too short period of time. Pausing function for {_pauseMilliseconds}ms...");
-                                Thread.Sleep(_pauseMilliseconds);
+                                log.Info($"Too many queries for new users in a too short period of time. Pausing function for {Convert.ToInt32(config["FunctionPauseMilliseconds"])}ms...");
+                                Thread.Sleep(Convert.ToInt32(config["FunctionPauseMilliseconds"]));
                             } else {
                                 var resultsJson = JToken.Parse(recsBody).Last().ToString();
                                 var encloseResultsJson = $"{{{resultsJson}}}";
