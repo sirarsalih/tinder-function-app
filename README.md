@@ -7,7 +7,7 @@ The app runs in Azure at specific intervals, auto liking and super liking recomm
 
 ## How to generate a new Facebook token if it expires
 
-The app authenticates with Tinder using Facebook. If the Facebook token expires, there needs to be generated a new token, otherwise a <code>401 Unauthorized</code> is returned.
+The app authenticates with Tinder using a Facebook ID and token. If the Facebook token expires, there needs to be generated a new token, otherwise a <code>401 Unauthorized</code> is returned.
 
 Here are the steps for generating a new Facebook token:
 
