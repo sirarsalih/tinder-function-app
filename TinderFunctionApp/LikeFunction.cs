@@ -25,7 +25,7 @@ namespace TinderFunctionApp
         private const string _matchUrl = "https://api.gotinder.com/matches/_id";
 
         [FunctionName("LikeFunction")]
-        public static async Task Run([TimerTrigger("0 */15 * * * *")]TimerInfo myTimer, TraceWriter log, ExecutionContext context)
+        public static async Task Run([TimerTrigger("0 */1 * * * *")]TimerInfo myTimer, TraceWriter log, ExecutionContext context)
         {
             using (var client = new HttpClient()) {
                 try {
@@ -54,16 +54,14 @@ namespace TinderFunctionApp
                                 foreach (var result in results.results) {
                                     if(new System.Random().NextDouble() >= 0.5) {
                                         var superLike = await client.PostAsync(_superLikeUrl.Replace("_id", result._id), null);
-                                        if (superLike.StatusCode == HttpStatusCode.OK) {
-                                            log.Info($"Successfully super liked {result.name} who is {result.distance_mi} Miles away from my current location.");
-                                            await GetMatchAsync(client, log, result._id, result.name);
-                                        }
+                                        if (superLike.StatusCode != HttpStatusCode.OK) continue;
+                                        log.Info($"Successfully super liked {result.name} who is {result.distance_mi} Miles away from my current location.");
+                                        await GetMatchAsync(client, log, result._id, result.name);
                                     } else {
                                         var like = await client.GetAsync(_likeUrl.Replace("_id", result._id));
-                                        if (like.StatusCode == HttpStatusCode.OK) {
-                                            log.Info($"Successfully liked {result.name} who is {result.distance_mi} Miles away from my current location.");
-                                            await GetMatchAsync(client, log, result._id, result.name);
-                                        }
+                                        if (like.StatusCode != HttpStatusCode.OK) continue;
+                                        log.Info($"Successfully liked {result.name} who is {result.distance_mi} Miles away from my current location.");
+                                        await GetMatchAsync(client, log, result._id, result.name);
                                     }
                                 }
                             }                            
@@ -78,7 +76,7 @@ namespace TinderFunctionApp
             }
         }
 
-        private async static Task<HttpResponseMessage> GetMatchAsync(HttpClient client, TraceWriter log, string id, string name)
+        private static async Task<HttpResponseMessage> GetMatchAsync(HttpClient client, TraceWriter log, string id, string name)
         {
             var match = await client.GetAsync(_matchUrl.Replace("_id", id));
             if (match.StatusCode == HttpStatusCode.OK) {
