@@ -79,18 +79,13 @@ namespace TinderFunctionApp
             log.Info($"Match with {result.name}!");
             log.Info($"Notifying {gmailUserName} by e-mail...");
             var gmailService = new GmailService();
-            var body = string.Empty;
-            foreach (var photo in result.photos) {
-                var url = photo.processedFiles.First().url;
-                body += $"<br/><img src=\"{url}\">";
-            }
             gmailService.SendEmail(
                 gmailUserName,
                 gmailAppPassword,
                 gmailUserName,
                 gmailUserName,
-                $"Tinder match with {result.name} ({Utils.GetGender(result.gender)} age {Utils.GetAge(result.birth_date)})! {result.name} has {result.photos.Count} photo(s) ",
-                body
+                Utils.CreateEmailSubject(result),
+                Utils.CreateEmailBody(result)
             );
         }
     }

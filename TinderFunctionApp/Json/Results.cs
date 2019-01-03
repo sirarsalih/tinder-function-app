@@ -30,6 +30,12 @@ namespace TinderFunctionApp.Json
 
         [DataMember]
         public List<Photo> photos { get; set; }
+
+        [DataMember]
+        public List<Job> jobs { get; set; }
+
+        [DataMember]
+        public List<School> schools { get; set; }
     }
 
     [DataContract]
@@ -44,5 +50,39 @@ namespace TinderFunctionApp.Json
     {
         [DataMember]
         public string url { get; set; }
+    }
+
+    [DataContract]
+    public class Job
+    {
+        [DataMember]
+        public Company company { get; set; }
+
+        [DataMember]
+        public Title title { get; set; }
+    }
+
+    [DataContract]
+    public class Company
+    {
+        [DataMember]
+        public string name { get; set; }
+    }
+
+    [DataContract]
+    public class Title
+    {
+        [DataMember]
+        public string name { get; set; }
+    }
+
+    [DataContract]
+    public class School
+    {
+        [DataMember]
+        public string id { get; set; }
+
+        [DataMember]
+        public string name { get; set; }
     }
 }
