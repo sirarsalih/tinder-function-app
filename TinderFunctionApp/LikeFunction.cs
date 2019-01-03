@@ -56,12 +56,12 @@ namespace TinderFunctionApp
                                     if(new Random().NextDouble() >= 0.5) {
                                         var superLike = await client.PostAsync(_superLikeUrl.Replace("_id", result._id), null);
                                         if (superLike.StatusCode != HttpStatusCode.OK) continue;
-                                        log.Info($"Successfully super liked {result.name} ({Utils.GetGender(result.gender)} age {Utils.GetAge(result.birth_date)}) who is {result.distance_mi} Miles away from my current location.");
+                                        log.Info($"Successfully super liked {result.name} ({Utils.GetGender(result.gender)} age {Utils.GetAge(result.birth_date)}) who is {result.distance_mi} Miles away from my current location. {result.name} has {result.photos.Count} photo(s).");
                                         await GetMatchAsync(client, log, result._id, result.name);
                                     } else {
                                         var like = await client.GetAsync(_likeUrl.Replace("_id", result._id));
                                         if (like.StatusCode != HttpStatusCode.OK) continue;
-                                        log.Info($"Successfully liked {result.name} ({Utils.GetGender(result.gender)} age {Utils.GetAge(result.birth_date)}) who is {result.distance_mi} Miles away from my current location.");
+                                        log.Info($"Successfully liked {result.name} ({Utils.GetGender(result.gender)} age {Utils.GetAge(result.birth_date)}) who is {result.distance_mi} Miles away from my current location. {result.name} has {result.photos.Count} photo(s).");
                                         await GetMatchAsync(client, log, result._id, result.name);
                                     }
                                 }

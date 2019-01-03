@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TinderFunctionApp.Json
 {
@@ -31,5 +27,22 @@ namespace TinderFunctionApp.Json
 
         [DataMember]
         public string distance_mi { get; set; }
+
+        [DataMember]
+        public List<Photo> photos { get; set; }
+    }
+
+    [DataContract]
+    public class Photo
+    {
+        [DataMember]
+        public List<ProcessedFile> processedFiles { get; set; }
+    }
+
+    [DataContract]
+    public class ProcessedFile
+    {
+        [DataMember]
+        public string url { get; set; }
     }
 }
