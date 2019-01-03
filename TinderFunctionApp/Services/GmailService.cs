@@ -19,6 +19,7 @@ namespace TinderFunctionApp.Services
             };
             mail.Subject = subject;
             mail.Body = body;
+            mail.IsBodyHtml = true;
             mailClient.Send(mail);
         }
     }

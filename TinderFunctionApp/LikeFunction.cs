@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Mail;
 using System.Runtime.Serialization.Json;
 using System.Threading;
 using System.Threading.Tasks;
