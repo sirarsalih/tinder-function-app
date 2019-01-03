@@ -7,6 +7,10 @@ Running at: https://tinderfunctionapp.azurewebsites.net/
 
 The app runs in Azure at specific intervals, auto liking and super liking recommendations from Tinder.
 
+## Match notification by e-mail
+
+If there is a match the app will automatically notify the user by e-mail, including all photos of the matched person in the e-mail.
+
 ## How to generate a new Facebook token if it expires
 
 The app authenticates with Tinder using a Facebook ID (which can be empty) and token (required). If the Facebook token expires, there needs to be generated a new token, otherwise a <code>401 Unauthorized</code> is returned from the Tinder API.
