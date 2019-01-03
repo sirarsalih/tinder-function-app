@@ -58,11 +58,17 @@ namespace TinderFunctionApp.Helpers
                 }
                 body = body.Remove(body.Length - 2) + ". ";
             } else if (result.jobs.Count > 0) {
-                body += "Works as a ";
+                body += "Works ";
                 foreach (var job in result.jobs) {
-                    body += $"{job.title?.name} at {job.company?.name}, a ";
+                    if (!string.IsNullOrWhiteSpace(job.title?.name) && !string.IsNullOrWhiteSpace(job.company?.name)) {
+                        body += $"as a {job.title.name} at {job.company.name}, ";
+                    } else if (string.IsNullOrWhiteSpace(job.title?.name)) {
+                        body += $"at {job.company?.name}, ";
+                    } else if (string.IsNullOrWhiteSpace(job.company?.name)) {
+                        body += $"as a {job.title.name}, ";
+                    }
                 }
-                body = body.Remove(body.Length - 4) + ". ";
+                body = body.Remove(body.Length - 2) + ". ";
             }
             foreach (var photo in result.photos) {
                 var url = photo.processedFiles.First().url;
