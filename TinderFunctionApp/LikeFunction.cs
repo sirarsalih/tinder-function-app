@@ -10,6 +10,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json.Linq;
+using TinderFunctionApp.Helpers;
 using TinderFunctionApp.Json;
 using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
 
@@ -52,22 +53,22 @@ namespace TinderFunctionApp
                                 var ser = new DataContractJsonSerializer(typeof(Results));
                                 var results = (Results)ser.ReadObject(ms);
                                 foreach (var result in results.results) {
-                                    if(new System.Random().NextDouble() >= 0.5) {
+                                    if(new Random().NextDouble() >= 0.5) {
                                         var superLike = await client.PostAsync(_superLikeUrl.Replace("_id", result._id), null);
                                         if (superLike.StatusCode != HttpStatusCode.OK) continue;
-                                        log.Info($"Successfully super liked {result.name} who is {result.distance_mi} Miles away from my current location.");
+                                        log.Info($"Successfully super liked {result.name}, {Utils.GetGender(result.gender)} age {Utils.GetAge(result.birth_date)}, who is {result.distance_mi} Miles away from my current location.");
                                         await GetMatchAsync(client, log, result._id, result.name);
                                     } else {
                                         var like = await client.GetAsync(_likeUrl.Replace("_id", result._id));
                                         if (like.StatusCode != HttpStatusCode.OK) continue;
-                                        log.Info($"Successfully liked {result.name} who is {result.distance_mi} Miles away from my current location.");
+                                        log.Info($"Successfully liked {result.name}, {Utils.GetGender(result.gender)} age {Utils.GetAge(result.birth_date)}, who is {result.distance_mi} Miles away from my current location.");
                                         await GetMatchAsync(client, log, result._id, result.name);
                                     }
                                 }
                             }                            
                             break;
                         case HttpStatusCode.Unauthorized:
-                            log.Info($"Unsuccessful authentication, check Facebook token. {(int)response.StatusCode} {response.ReasonPhrase}.");
+                            log.Info($"Unsuccessful authentication. {(int)response.StatusCode} {response.ReasonPhrase}. Check Facebook token, it may be invalid or has expired and must be renewed.");
                             break;                       
                     }
                 } catch (HttpRequestException e) {

@@ -21,7 +21,13 @@ namespace TinderFunctionApp.Json
         public string _id { get; set; }
 
         [DataMember]
+        public string birth_date { get; set; }
+
+        [DataMember]
         public string name { get; set; }
+
+        [DataMember]
+        public int gender { get; set; }
 
         [DataMember]
         public string distance_mi { get; set; }
