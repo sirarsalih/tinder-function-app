@@ -1,4 +1,8 @@
-﻿using Microsoft.WindowsAzure.Storage;
+﻿using System.CodeDom;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 
 namespace TinderFunctionApp.Services
@@ -22,6 +26,12 @@ namespace TinderFunctionApp.Services
         {
             var insertOperation = TableOperation.Insert(tableEntity);
             await cloudTable.ExecuteAsync(insertOperation);
+        }
+
+        public Entities.Match GetMatch(CloudTable cloudTable, string id)
+        {
+            var query = new TableQuery<Entities.Match>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, id));
+            return cloudTable.ExecuteQuery(query).FirstOrDefault();
         }
     }
 }

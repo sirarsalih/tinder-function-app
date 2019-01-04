@@ -1,11 +1,12 @@
 ﻿using System.Net;
 using System.Net.Mail;
+using System.Threading.Tasks;
 
 namespace TinderFunctionApp.Services
 {
     public class GmailService
     {
-        public void SendEmail(string userName, string appPassword, string from, string to, string subject, string body)
+        public async Task SendEmailAsync(string userName, string appPassword, string from, string to, string subject, string body)
         {
             var mail = new MailMessage(userName, userName);
             var mailClient = new SmtpClient
@@ -20,7 +21,7 @@ namespace TinderFunctionApp.Services
             mail.Subject = subject;
             mail.Body = body;
             mail.IsBodyHtml = true;
-            mailClient.Send(mail);
+            await mailClient.SendMailAsync(mail);
         }
     }
 }

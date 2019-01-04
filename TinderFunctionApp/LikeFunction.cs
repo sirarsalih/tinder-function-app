@@ -39,18 +39,20 @@ namespace TinderFunctionApp
                             var tinderToken = JObject.Parse(responseBody).GetValue("token").ToString();
                             client.DefaultRequestHeaders.Add("X-Auth-Token", tinderToken);
                             client.DefaultRequestHeaders.Add("User-Agent", "Tinder/7.5.3 (iPhone; iOS 10.3.2; Scale/2.00)");
-                            var updates = await client.PostAsJsonAsync(Utils.GetUpdatesUrl(), new Time { last_activity_date = "" });
+                            var updates = await client.PostAsJsonAsync(Utils.GetUpdatesUrl(), new Time { last_activity_date = DateTime.UtcNow.AddHours(-1).ToString("yyyy-MM-ddTHH:mm:ssZ") });
                             var updatesBody = await updates.Content.ReadAsStringAsync();
                             var ms = new MemoryStream(System.Text.Encoding.ASCII.GetBytes(updatesBody)) { Position = 0 };
                             var ser = new DataContractJsonSerializer(typeof(Updates));
                             var updatesJson = (Updates)ser.ReadObject(ms);
                             var matchesTable = tableStorageService.GetCloudTable(Utils.GetMatchesTableName());
-
-                            //TODO: Work in progress
-                            //foreach (var match in updatesJson.matches) {
-                            //    tableStorageService.InsertAsync(matchesTable, new Match(match._id, match.created_date));
-                            //}
-
+                            foreach (var match in updatesJson.matches) {
+                                var matchEntity = tableStorageService.GetMatch(matchesTable, match._id);
+                                if (matchEntity != null) continue;
+                                log.Info("New match! Notifying user by e-mail...");
+                                await SendEmailAsync(config["GmailUserName"], config["GmailAppPassword"], match.person);
+                                log.Info("Saving new match in table storage...");
+                                tableStorageService.InsertAsync(matchesTable, new Match(match._id, match.created_date));
+                            }
                             var recs = await client.GetAsync(Utils.GetRecsUrl());
                             var recsBody = await recs.Content.ReadAsStringAsync();
                             if(recsBody.Contains("recs timeout") || recsBody.Contains("recs exhausted")) {
@@ -85,10 +87,10 @@ namespace TinderFunctionApp
             }
         }
 
-        private static async void SendEmailAsync(string gmailUserName, string gmailAppPassword, Person person)
+        private static async Task SendEmailAsync(string gmailUserName, string gmailAppPassword, Person person)
         {
             var gmailService = new GmailService();
-            gmailService.SendEmail(
+            await gmailService.SendEmailAsync(
                 gmailUserName,
                 gmailAppPassword,
                 gmailUserName,
