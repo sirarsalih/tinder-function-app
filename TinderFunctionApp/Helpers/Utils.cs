@@ -36,6 +36,11 @@ namespace TinderFunctionApp.Helpers
             return "https://api.gotinder.com/matches/_id".Replace("_id", id);
         }
 
+        public static string GetMatchesTableName()
+        {
+            return "Matches";
+        }
+
         public static int GetAge(string birthDate)
         {
             return DateTime.Now.Year - DateTime.Parse(birthDate, null, System.Globalization.DateTimeStyles.RoundtripKind).Year;

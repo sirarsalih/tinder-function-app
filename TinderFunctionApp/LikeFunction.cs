@@ -37,7 +37,11 @@ namespace TinderFunctionApp
                             var tinderToken = JObject.Parse(responseBody).GetValue("token").ToString();
                             client.DefaultRequestHeaders.Add("X-Auth-Token", tinderToken);
                             client.DefaultRequestHeaders.Add("User-Agent", "Tinder/7.5.3 (iPhone; iOS 10.3.2; Scale/2.00)");
-                            var updates = await client.PostAsJsonAsync("https://api.gotinder.com/updates", new Time { last_activity_date = "" });
+                            var updates = await client.PostAsJsonAsync(Utils.GetUpdatesUrl(), new Time { last_activity_date = "" });
+
+                            var tableStorageService = new TableStorageService(config["StorageAccountName"], config["StorageAccountKey"]);
+                            var matchesTable = tableStorageService.GetCloudTable(Utils.GetMatchesTableName());
+
                             var recs = await client.GetAsync(Utils.GetRecsUrl());
                             var recsBody = await recs.Content.ReadAsStringAsync();
                             if(recsBody.Contains("recs timeout") || recsBody.Contains("recs exhausted")) {
@@ -54,12 +58,12 @@ namespace TinderFunctionApp
                                         var superLike = await client.PostAsync(Utils.GetSuperLikeUrl(result._id), null);
                                         if (superLike.StatusCode != HttpStatusCode.OK) continue;
                                         log.Info($"Successfully super liked {result.name} ({Utils.GetGender(result.gender)} age {Utils.GetAge(result.birth_date)}) who is {result.distance_mi} Miles away from my current location. {result.name} has {result.photos.Count} photo(s).");
-                                        MatchAndSendEmailAsync(client, log, result, config["GmailUserName"], config["GmailAppPassword"]);
+                                        //SendEmailAsync(client, log, result, config["GmailUserName"], config["GmailAppPassword"]);
                                     } else {
                                         var like = await client.GetAsync(Utils.GetLikeUrl(result._id));
                                         if (like.StatusCode != HttpStatusCode.OK) continue;
                                         log.Info($"Successfully liked {result.name} ({Utils.GetGender(result.gender)} age {Utils.GetAge(result.birth_date)}) who is {result.distance_mi} Miles away from my current location. {result.name} has {result.photos.Count} photo(s).");
-                                        MatchAndSendEmailAsync(client, log, result, config["GmailUserName"], config["GmailAppPassword"]);
+                                        //SendEmailAsync(client, log, result, config["GmailUserName"], config["GmailAppPassword"]);
                                     }
                                 }
                             }                            
@@ -74,21 +78,21 @@ namespace TinderFunctionApp
             }
         }
 
-        private static async void MatchAndSendEmailAsync(HttpClient client, TraceWriter log, Result result, string gmailUserName, string gmailAppPassword)
+        private static async void SendEmailAsync(HttpClient client, TraceWriter log, Person person, string gmailUserName, string gmailAppPassword)
         {
-            var match = await client.GetAsync(Utils.GetMatchUrl(result._id));
-            if (match.StatusCode != HttpStatusCode.OK) return;
-            log.Info($"Match with {result.name}!");
-            log.Info($"Notifying {gmailUserName} by e-mail...");
-            var gmailService = new GmailService();
-            gmailService.SendEmail(
-                gmailUserName,
-                gmailAppPassword,
-                gmailUserName,
-                gmailUserName,
-                Utils.CreateEmailSubject(result),
-                Utils.CreateEmailBody(result)
-            );
+            //var match = await client.GetAsync(Utils.GetMatchUrl(person._id));
+            //if (match.StatusCode != HttpStatusCode.OK) return;
+            //log.Info($"Match with {person.name}!");
+            //log.Info($"Notifying {gmailUserName} by e-mail...");
+            //var gmailService = new GmailService();
+            //gmailService.SendEmail(
+            //    gmailUserName,
+            //    gmailAppPassword,
+            //    gmailUserName,
+            //    gmailUserName,
+            //    Utils.CreateEmailSubject(person),
+            //    Utils.CreateEmailBody(person)
+            //);
         }
     }
 }
