@@ -29,6 +29,7 @@ namespace TinderFunctionApp
                      .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
                      .AddEnvironmentVariables()
                      .Build();
+                    var tableStorageService = new TableStorageService(config["StorageAccountName"], config["StorageAccountKey"]);
                     var response = await client.PostAsJsonAsync(Utils.GetAuthUrl(), new Auth { facebook_id = config["FacebookId"], facebook_token = config["FacebookToken"]});
                     switch (response.StatusCode) {
                         case HttpStatusCode.OK:
@@ -38,8 +39,11 @@ namespace TinderFunctionApp
                             client.DefaultRequestHeaders.Add("X-Auth-Token", tinderToken);
                             client.DefaultRequestHeaders.Add("User-Agent", "Tinder/7.5.3 (iPhone; iOS 10.3.2; Scale/2.00)");
                             var updates = await client.PostAsJsonAsync(Utils.GetUpdatesUrl(), new Time { last_activity_date = "" });
+                            var updatesBody = await updates.Content.ReadAsStringAsync();
+                            var ms = new MemoryStream(System.Text.Encoding.ASCII.GetBytes(updatesBody)) { Position = 0 };
+                            var ser = new DataContractJsonSerializer(typeof(Updates));
+                            var updatesJson = (Updates)ser.ReadObject(ms);
 
-                            var tableStorageService = new TableStorageService(config["StorageAccountName"], config["StorageAccountKey"]);
                             var matchesTable = tableStorageService.GetCloudTable(Utils.GetMatchesTableName());
 
                             var recs = await client.GetAsync(Utils.GetRecsUrl());
@@ -50,8 +54,8 @@ namespace TinderFunctionApp
                             } else {
                                 var resultsJson = JToken.Parse(recsBody).Last().ToString();
                                 var encloseResultsJson = $"{{{resultsJson}}}";
-                                var ms = new MemoryStream(System.Text.Encoding.ASCII.GetBytes(encloseResultsJson)) { Position = 0 };
-                                var ser = new DataContractJsonSerializer(typeof(Results));
+                                ms = new MemoryStream(System.Text.Encoding.ASCII.GetBytes(encloseResultsJson)) { Position = 0 };
+                                ser = new DataContractJsonSerializer(typeof(Results));
                                 var results = (Results)ser.ReadObject(ms);
                                 foreach (var result in results.results) {
                                     if(new Random().NextDouble() >= 0.5) {
