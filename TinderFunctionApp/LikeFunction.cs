@@ -36,6 +36,8 @@ namespace TinderFunctionApp
                             var responseBody = await response.Content.ReadAsStringAsync();
                             var tinderToken = JObject.Parse(responseBody).GetValue("token").ToString();
                             client.DefaultRequestHeaders.Add("X-Auth-Token", tinderToken);
+                            client.DefaultRequestHeaders.Add("User-Agent", "Tinder/7.5.3 (iPhone; iOS 10.3.2; Scale/2.00)");
+                            var updates = await client.PostAsJsonAsync("https://api.gotinder.com/updates", new Time { last_activity_date = "" });
                             var recs = await client.GetAsync(Utils.GetRecsUrl());
                             var recsBody = await recs.Content.ReadAsStringAsync();
                             if(recsBody.Contains("recs timeout") || recsBody.Contains("recs exhausted")) {

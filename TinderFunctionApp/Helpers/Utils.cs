@@ -11,6 +11,11 @@ namespace TinderFunctionApp.Helpers
             return "https://api.gotinder.com/auth";
         }
 
+        public static string GetUpdatesUrl()
+        {
+            return "https://api.gotinder.com/updates";
+        }
+
         public static string GetRecsUrl()
         {
             return "https://api.gotinder.com/user/recs";
