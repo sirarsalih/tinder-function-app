@@ -17,5 +17,11 @@ namespace TinderFunctionApp.Services
         {
             return _cloudTableClient.GetTableReference(tableName);
         }
+
+        public async void InsertAsync(CloudTable cloudTable, TableEntity tableEntity)
+        {
+            var insertOperation = TableOperation.Insert(tableEntity);
+            await cloudTable.ExecuteAsync(insertOperation);
+        }
     }
 }

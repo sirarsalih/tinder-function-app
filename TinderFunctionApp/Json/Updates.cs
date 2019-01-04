@@ -14,6 +14,9 @@ namespace TinderFunctionApp.Json
     public class Match
     {
         [DataMember]
+        public string _id { get; set; }
+
+        [DataMember]
         public Seen seen { get; set; }
 
         [DataMember]

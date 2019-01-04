@@ -14,6 +14,7 @@ using TinderFunctionApp.Helpers;
 using TinderFunctionApp.Json;
 using TinderFunctionApp.Services;
 using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
+using Match = TinderFunctionApp.Entities.Match;
 
 namespace TinderFunctionApp
 {
@@ -43,8 +44,12 @@ namespace TinderFunctionApp
                             var ms = new MemoryStream(System.Text.Encoding.ASCII.GetBytes(updatesBody)) { Position = 0 };
                             var ser = new DataContractJsonSerializer(typeof(Updates));
                             var updatesJson = (Updates)ser.ReadObject(ms);
-
                             var matchesTable = tableStorageService.GetCloudTable(Utils.GetMatchesTableName());
+
+                            //TODO: Work in progress
+                            //foreach (var match in updatesJson.matches) {
+                            //    tableStorageService.InsertAsync(matchesTable, new Match(match._id, match.created_date));
+                            //}
 
                             var recs = await client.GetAsync(Utils.GetRecsUrl());
                             var recsBody = await recs.Content.ReadAsStringAsync();
@@ -62,12 +67,10 @@ namespace TinderFunctionApp
                                         var superLike = await client.PostAsync(Utils.GetSuperLikeUrl(result._id), null);
                                         if (superLike.StatusCode != HttpStatusCode.OK) continue;
                                         log.Info($"Successfully super liked {result.name} ({Utils.GetGender(result.gender)} age {Utils.GetAge(result.birth_date)}) who is {result.distance_mi} Miles away from my current location. {result.name} has {result.photos.Count} photo(s).");
-                                        //SendEmailAsync(client, log, result, config["GmailUserName"], config["GmailAppPassword"]);
                                     } else {
                                         var like = await client.GetAsync(Utils.GetLikeUrl(result._id));
                                         if (like.StatusCode != HttpStatusCode.OK) continue;
                                         log.Info($"Successfully liked {result.name} ({Utils.GetGender(result.gender)} age {Utils.GetAge(result.birth_date)}) who is {result.distance_mi} Miles away from my current location. {result.name} has {result.photos.Count} photo(s).");
-                                        //SendEmailAsync(client, log, result, config["GmailUserName"], config["GmailAppPassword"]);
                                     }
                                 }
                             }                            
@@ -82,21 +85,17 @@ namespace TinderFunctionApp
             }
         }
 
-        private static async void SendEmailAsync(HttpClient client, TraceWriter log, Person person, string gmailUserName, string gmailAppPassword)
+        private static async void SendEmailAsync(string gmailUserName, string gmailAppPassword, Person person)
         {
-            //var match = await client.GetAsync(Utils.GetMatchUrl(person._id));
-            //if (match.StatusCode != HttpStatusCode.OK) return;
-            //log.Info($"Match with {person.name}!");
-            //log.Info($"Notifying {gmailUserName} by e-mail...");
-            //var gmailService = new GmailService();
-            //gmailService.SendEmail(
-            //    gmailUserName,
-            //    gmailAppPassword,
-            //    gmailUserName,
-            //    gmailUserName,
-            //    Utils.CreateEmailSubject(person),
-            //    Utils.CreateEmailBody(person)
-            //);
+            var gmailService = new GmailService();
+            gmailService.SendEmail(
+                gmailUserName,
+                gmailAppPassword,
+                gmailUserName,
+                gmailUserName,
+                Utils.CreateEmailSubject(person),
+                Utils.CreateEmailBody(person)
+            );
         }
     }
 }
