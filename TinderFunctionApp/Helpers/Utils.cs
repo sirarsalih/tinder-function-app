@@ -1,7 +1,6 @@
 ﻿using System;
-using System.IO;
+using System.Globalization;
 using System.Linq;
-using System.Runtime.Serialization.Json;
 using TinderFunctionApp.Json;
 
 namespace TinderFunctionApp.Helpers
@@ -45,7 +44,7 @@ namespace TinderFunctionApp.Helpers
 
         public static int GetAge(string birthDate)
         {
-            var dob = DateTime.Parse(birthDate, null, System.Globalization.DateTimeStyles.RoundtripKind);
+            var dob = GetBirthDate(birthDate);
             var today = DateTime.Today;
 
             var months = today.Month - dob.Month;
@@ -64,6 +63,11 @@ namespace TinderFunctionApp.Helpers
             return Convert.ToInt32(years);
         }
 
+        public static DateTime GetBirthDate(string birthDate)
+        {
+            return DateTime.Parse(birthDate, null, DateTimeStyles.RoundtripKind);
+        }
+
         public static string GetGender(int gender)
         {
             // Male: 0
@@ -78,7 +82,9 @@ namespace TinderFunctionApp.Helpers
 
         public static string CreateEmailBody(Person person)
         {
-            var body = $"{person.name} is {GetAge(person.birth_date)} years old.";
+            var age = GetAge(person.birth_date);
+            var birthDate = GetBirthDate(person.birth_date);
+            var body = $"{person.name} is {age} years old. Born on {birthDate.ToString("MMMM", CultureInfo.InvariantCulture)} {birthDate.Day}, {birthDate.Year}.";
             foreach (var photo in person.photos) {
                 var url = photo.processedFiles.First().url;
                 body += $"<br/><br/><img src=\"{url}\">";
