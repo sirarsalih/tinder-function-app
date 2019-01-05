@@ -9,7 +9,7 @@ The app runs in Azure at specific intervals, auto liking and super liking recomm
 
 ## Match notification by e-mail
 
-The app gets recent updates from Tinder, checks with Azure Table storage if there has been a new match recently then notifies the user by e-mail, including all photos of the matched person in the e-mail.
+The app gets recent updates from Tinder, checks with Azure Table storage if there has been a new match recently and if that's the case then notifies the user by e-mail, including all photos of the matched person in the e-mail. The table storage is then updated with the new match data.
 
 ## How to generate a new Facebook token if it expires
 
