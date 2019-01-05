@@ -45,7 +45,23 @@ namespace TinderFunctionApp.Helpers
 
         public static int GetAge(string birthDate)
         {
-            return DateTime.Now.Year - DateTime.Parse(birthDate, null, System.Globalization.DateTimeStyles.RoundtripKind).Year;
+            var dob = DateTime.Parse(birthDate, null, System.Globalization.DateTimeStyles.RoundtripKind);
+            var today = DateTime.Today;
+
+            var months = today.Month - dob.Month;
+            var years = today.Year - dob.Year;
+
+            if (today.Day < dob.Day) {
+                months--;
+            }
+            if (months < 0) {
+                years--;
+                months += 12;
+            }
+
+            var days = (today - dob.AddMonths((years * 12) + months)).Days;
+
+            return Convert.ToInt32(years);
         }
 
         public static string GetGender(int gender)
