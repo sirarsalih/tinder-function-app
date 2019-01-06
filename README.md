@@ -30,10 +30,10 @@ https://www.facebook.com/v2.6/dialog/oauth?redirect_uri=fb464891386855067%3A%2F%
 8. You will see a long string, search for "access_token=" and then copy the token string until it ends just before "&expires_in".
 9. Use this token to authenticate.
 
-Note: As of today I have not found a way of automating the Facebook token generation upon expiration. Pull-requests are most welcome.
+Note: As of today I have not found a working way of automating the Facebook token generation upon expiration. Pull-requests are most welcome.
 
 ## Tinder API documentation sources
 
-https://github.com/fbessez/Tinder
-<br/>
 https://gist.github.com/rtt/10403467
+<br/>
+https://github.com/fbessez/Tinder
