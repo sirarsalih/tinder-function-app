@@ -1,4 +1,4 @@
-# tinder-function-app
+# Tinder Automation in Azure
 An automated Tinder app running as an Azure Function in the cloud.
 
 Running at: https://tinderfunctionapp.azurewebsites.net/
