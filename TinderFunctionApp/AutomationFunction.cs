@@ -18,9 +18,9 @@ using Match = TinderFunctionApp.Entities.Match;
 
 namespace TinderFunctionApp
 {
-    public static class LikeFunction
+    public static class AutomationFunction
     {
-        [FunctionName("LikeFunction")]
+        [FunctionName("AutomationFunction")]
         public static async Task Run([TimerTrigger("0 */1 * * * *")]TimerInfo myTimer, TraceWriter log, ExecutionContext context)
         {
             using (var client = new HttpClient()) {
