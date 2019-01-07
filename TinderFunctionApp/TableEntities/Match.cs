@@ -6,10 +6,10 @@ namespace TinderFunctionApp.Entities
     {
         public Match() { }
 
-        public Match(string id, string createdDate)
+        public Match(string id, string name)
         {
             PartitionKey = id;
-            RowKey = createdDate;
+            RowKey = name;
         }
     }
 }
