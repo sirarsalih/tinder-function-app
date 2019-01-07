@@ -75,6 +75,11 @@ namespace TinderFunctionApp.Helpers
             return gender == 1 ? "female" : "male";
         }
 
+        public static double GetKmDistance(string miles)
+        {
+            return Convert.ToInt32(miles) * 1.6;
+        }
+
         public static string CreateEmailSubject(Person person)
         {
             return $"Tinder match with {person.name} ({GetAge(person.birth_date)})! {person.name} has {person.photos.Count} photo(s)";

@@ -66,12 +66,12 @@ namespace TinderFunctionApp
                                     if (counter % 2 == 0) {
                                         var superLike = await client.PostAsync(Utils.GetSuperLikeUrl(result._id), null);
                                         if (superLike.StatusCode == HttpStatusCode.OK) {
-                                            log.Info($"Successfully super liked {result.name} ({Utils.GetGender(result.gender)} age {Utils.GetAge(result.birth_date)}) who is {result.distance_mi} Miles away from my current location. {result.name} has {result.photos.Count} photo(s).");
+                                            log.Info($"Successfully super liked {result.name} ({Utils.GetGender(result.gender)} age {Utils.GetAge(result.birth_date)}) who is {Utils.GetKmDistance(result.distance_mi)} km away from my current location. {result.name} has {result.photos.Count} photo(s).");
                                         }
                                     } else {
                                         var like = await client.GetAsync(Utils.GetLikeUrl(result._id));
                                         if (like.StatusCode == HttpStatusCode.OK) {
-                                            log.Info($"Successfully liked {result.name} ({Utils.GetGender(result.gender)} age {Utils.GetAge(result.birth_date)}) who is {result.distance_mi} Miles away from my current location. {result.name} has {result.photos.Count} photo(s).");
+                                            log.Info($"Successfully liked {result.name} ({Utils.GetGender(result.gender)} age {Utils.GetAge(result.birth_date)}) who is {Utils.GetKmDistance(result.distance_mi)} km away from my current location. {result.name} has {result.photos.Count} photo(s).");
                                         }
                                     }
                                     counter++;
