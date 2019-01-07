@@ -52,6 +52,8 @@ namespace TinderFunctionApp
                                 await SendEmailAsync(config["GmailUserName"], config["GmailAppPassword"], match.person);
                                 log.Info("Saving new match in table storage...");
                                 tableStorageService.InsertAsync(matchesTable, new Match(match._id, match.created_date));
+                                log.Info("Sending message to new match...");
+                                await client.PostAsJsonAsync(Utils.GetMatchMessageUrl(match._id), new Message{ message = OneLiners.GetOpener(Category.Charm) });
                             }
                             var recs = await client.GetAsync(Utils.GetRecsUrl());
                             var recsBody = await recs.Content.ReadAsStringAsync();

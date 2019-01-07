@@ -73,5 +73,6 @@ namespace TinderFunctionApp.Json
     [DataContract]
     public class Message
     {
+        public string message { get; set; }
     }
 }
