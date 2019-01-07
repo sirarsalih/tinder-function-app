@@ -55,10 +55,7 @@ namespace TinderFunctionApp
                             }
                             var recs = await client.GetAsync(Utils.GetRecsUrl());
                             var recsBody = await recs.Content.ReadAsStringAsync();
-                            if(recsBody.Contains("recs timeout") || recsBody.Contains("recs exhausted")) {
-                                log.Info($"Too many queries for new users in a too short period of time. Pausing function for {Convert.ToInt32(config["FunctionPauseMilliseconds"])}ms...");
-                                Thread.Sleep(Convert.ToInt32(config["FunctionPauseMilliseconds"]));
-                            } else {
+                            if(!(recsBody.Contains("recs timeout") || recsBody.Contains("recs exhausted"))) {
                                 var resultsJson = JToken.Parse(recsBody).Last().ToString();
                                 var encloseResultsJson = $"{{{resultsJson}}}";
                                 ms = new MemoryStream(System.Text.Encoding.ASCII.GetBytes(encloseResultsJson)) { Position = 0 };
@@ -79,7 +76,10 @@ namespace TinderFunctionApp
                                     }
                                     counter++;
                                 }
-                            }                            
+                            } else {
+                                log.Info($"Too many queries for new users in a too short period of time. Pausing function for {Convert.ToInt32(config["FunctionPauseMilliseconds"])}ms...");
+                                Thread.Sleep(Convert.ToInt32(config["FunctionPauseMilliseconds"]));
+                            }
                             break;
                         case HttpStatusCode.Unauthorized:
                             log.Info($"Unsuccessful authentication. {(int)response.StatusCode} {response.ReasonPhrase}. Check Facebook token, it may be invalid or has expired and must be renewed.");
