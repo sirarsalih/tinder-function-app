@@ -64,15 +64,20 @@ namespace TinderFunctionApp
                                 ms = new MemoryStream(System.Text.Encoding.ASCII.GetBytes(encloseResultsJson)) { Position = 0 };
                                 ser = new DataContractJsonSerializer(typeof(Results));
                                 var results = (Results)ser.ReadObject(ms);
+                                var counter = 1;
                                 foreach (var result in results.results) {
-                                    var superLike = await client.PostAsync(Utils.GetSuperLikeUrl(result._id), null);
-                                    if (superLike.StatusCode == HttpStatusCode.OK) {
-                                        log.Info($"Successfully super liked {result.name} ({Utils.GetGender(result.gender)} age {Utils.GetAge(result.birth_date)}) who is {result.distance_mi} Miles away from my current location. {result.name} has {result.photos.Count} photo(s).");
+                                    if (counter % 2 == 0) {
+                                        var superLike = await client.PostAsync(Utils.GetSuperLikeUrl(result._id), null);
+                                        if (superLike.StatusCode == HttpStatusCode.OK) {
+                                            log.Info($"Successfully super liked {result.name} ({Utils.GetGender(result.gender)} age {Utils.GetAge(result.birth_date)}) who is {result.distance_mi} Miles away from my current location. {result.name} has {result.photos.Count} photo(s).");
+                                        }
+                                    } else {
+                                        var like = await client.GetAsync(Utils.GetLikeUrl(result._id));
+                                        if (like.StatusCode == HttpStatusCode.OK) {
+                                            log.Info($"Successfully liked {result.name} ({Utils.GetGender(result.gender)} age {Utils.GetAge(result.birth_date)}) who is {result.distance_mi} Miles away from my current location. {result.name} has {result.photos.Count} photo(s).");
+                                        }
                                     }
-                                    var like = await client.GetAsync(Utils.GetLikeUrl(result._id));
-                                    if (like.StatusCode == HttpStatusCode.OK) {
-                                        log.Info($"Successfully liked {result.name} ({Utils.GetGender(result.gender)} age {Utils.GetAge(result.birth_date)}) who is {result.distance_mi} Miles away from my current location. {result.name} has {result.photos.Count} photo(s).");
-                                    }
+                                    counter++;
                                 }
                             }                            
                             break;
