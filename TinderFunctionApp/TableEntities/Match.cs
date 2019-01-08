@@ -1,6 +1,6 @@
 ﻿using Microsoft.WindowsAzure.Storage.Table;
 
-namespace TinderFunctionApp.Entities
+namespace TinderFunctionApp.TableEntities
 {
     public class Match : TableEntity
     {

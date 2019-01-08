@@ -14,7 +14,7 @@ using TinderFunctionApp.Helpers;
 using TinderFunctionApp.Json;
 using TinderFunctionApp.Services;
 using ExecutionContext = Microsoft.Azure.WebJobs.ExecutionContext;
-using Match = TinderFunctionApp.Entities.Match;
+using Match = TinderFunctionApp.TableEntities.Match;
 
 namespace TinderFunctionApp
 {

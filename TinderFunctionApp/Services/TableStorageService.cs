@@ -1,9 +1,7 @@
-﻿using System.CodeDom;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
+﻿using System.Linq;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
+using Match = TinderFunctionApp.TableEntities.Match;
 
 namespace TinderFunctionApp.Services
 {
@@ -28,10 +26,32 @@ namespace TinderFunctionApp.Services
             await cloudTable.ExecuteAsync(insertOperation);
         }
 
-        public Entities.Match GetMatch(CloudTable cloudTable, string id)
+        public Match GetMatch(CloudTable cloudTable, string partitionKey)
         {
-            var query = new TableQuery<Entities.Match>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, id));
+            var query = new TableQuery<Match>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, partitionKey));
             return cloudTable.ExecuteQuery(query).FirstOrDefault();
+        }
+
+        public Match GetMatch(CloudTable cloudTable, string partitionKey, string rowKey)
+        {
+            var retrieveOperation = TableOperation.Retrieve<Match>(partitionKey, rowKey);
+            return (Match)cloudTable.Execute(retrieveOperation).Result;
+        }
+
+        public async void DeleteAsync(CloudTable cloudTable, TableEntity tableEntity)
+        {
+            var deleteOperation = TableOperation.Delete(tableEntity);
+            await cloudTable.ExecuteAsync(deleteOperation);
+        }
+
+        public async void InsertOrReplaceAsync(CloudTable cloudTable, TableEntity tableEntity, string partitionKey, string rowKey)
+        {
+            tableEntity.PartitionKey = partitionKey;
+            tableEntity.RowKey = rowKey;
+            //"last-write-wins" strategy
+            tableEntity.ETag = "*";
+            var insertOrReplaceOperation = TableOperation.InsertOrReplace(tableEntity);
+            await cloudTable.ExecuteAsync(insertOrReplaceOperation);
         }
     }
 }
