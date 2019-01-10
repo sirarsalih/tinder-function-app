@@ -110,7 +110,6 @@ namespace TinderFunctionApp
                         log.Info($"Too many queries for new users in a too short period of time. Pausing function for {Convert.ToInt32(config["FunctionPauseMilliseconds"])}ms...");
                         Thread.Sleep(Convert.ToInt32(config["FunctionPauseMilliseconds"]));
                     }
-
                     break;
                 case HttpStatusCode.Unauthorized:
                     log.Info($"Unsuccessful authentication with Tinder API using Tinder token. {(int) updates.StatusCode} {updates.ReasonPhrase}. Generating new Tinder token using Facebook token...");
