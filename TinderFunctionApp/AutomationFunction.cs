@@ -39,7 +39,7 @@ namespace TinderFunctionApp
                             var tinderToken = JObject.Parse(responseBody).GetValue("token").ToString();
                             client.DefaultRequestHeaders.Add("X-Auth-Token", tinderToken);
                             client.DefaultRequestHeaders.Add("User-Agent", "Tinder/7.5.3 (iPhone; iOS 10.3.2; Scale/2.00)");
-                            var updates = await client.PostAsJsonAsync(Utils.GetUpdatesUrl(), new Time { last_activity_date = DateTime.UtcNow.AddHours(-1).ToString("yyyy-MM-ddTHH:mm:ssZ") });
+                            var updates = await client.PostAsJsonAsync(Utils.GetUpdatesUrl(), new Time { last_activity_date = "" });
                             var updatesBody = await updates.Content.ReadAsStringAsync();
                             var ms = new MemoryStream(System.Text.Encoding.ASCII.GetBytes(updatesBody)) { Position = 0 };
                             var ser = new DataContractJsonSerializer(typeof(Updates));
@@ -51,7 +51,7 @@ namespace TinderFunctionApp
                                 log.Info("New match! Notifying user by e-mail...");
                                 await SendEmailAsync(config["GmailUserName"], config["GmailAppPassword"], match.person);
                                 log.Info("Saving new match in table storage...");
-                                tableStorageService.InsertAsync(matchesTable, new Match(match._id, match.person.name));
+                                tableStorageService.Insert(matchesTable, new Match(match._id, match.person.name));
                                 //log.Info("Sending message to new match...");
                                 //await client.PostAsJsonAsync(Utils.GetMatchMessageUrl(match._id), new Message{ message = OneLiners.GetOpener(Category.Charm) });
                             }

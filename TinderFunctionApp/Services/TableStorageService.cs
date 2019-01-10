@@ -20,6 +20,13 @@ namespace TinderFunctionApp.Services
             return _cloudTableClient.GetTableReference(tableName);
         }
 
+        public void Insert(CloudTable cloudTable, TableEntity tableEntity)
+        {
+            var insertOperation = TableOperation.Insert(tableEntity);
+            cloudTable.Execute(insertOperation);
+        }
+
+        // This one is not working for me today
         public async void InsertAsync(CloudTable cloudTable, TableEntity tableEntity)
         {
             var insertOperation = TableOperation.Insert(tableEntity);
