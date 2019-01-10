@@ -45,16 +45,13 @@ namespace TinderFunctionApp
             }
         }
 
-        private static async Task AuthenticateAndAutomateAsync(TraceWriter log, HttpClient client, TableStorageService tableStorageService,
-            IConfigurationRoot config, GmailService gmailService)
+        private static async Task AuthenticateAndAutomateAsync(TraceWriter log, HttpClient client, TableStorageService tableStorageService, IConfigurationRoot config, GmailService gmailService)
         {
-            var updates = await client.PostAsJsonAsync(Utils.GetUpdatesUrl(),
-                new Time {last_activity_date = DateTime.UtcNow.AddHours(-1).ToString("yyyy-MM-ddTHH:mm:ssZ")});
+            var updates = await client.PostAsJsonAsync(Utils.GetUpdatesUrl(), new Time {last_activity_date = DateTime.UtcNow.AddHours(-1).ToString("yyyy-MM-ddTHH:mm:ssZ")});
             switch (updates.StatusCode)
             {
                 case HttpStatusCode.OK:
                     log.Info($"Successful authentication with Tinder API. {(int) updates.StatusCode} {updates.ReasonPhrase}.");
-
                     var updatesBody = await updates.Content.ReadAsStringAsync();
                     var ms = new MemoryStream(System.Text.Encoding.ASCII.GetBytes(updatesBody)) {Position = 0};
                     var ser = new DataContractJsonSerializer(typeof(Updates));
@@ -64,14 +61,12 @@ namespace TinderFunctionApp
                     {
                         foreach (var message in match.messages)
                         {
-                            if (message.@from != config["TinderUserId"] && Utils.IsRecent(message.created_date, DateTime.Now, 3))
+                            if (message.from != config["TinderUserId"] && Utils.IsRecent(message.created_date, DateTime.Now, 3))
                             {
-                                log.Info(
-                                    $"New message from {match.person.name} ({Utils.GetAge(match.person.birth_date)}). Notifying user by e-mail...");
+                                log.Info($"New message from {match.person.name} ({Utils.GetAge(match.person.birth_date)}). Notifying user by e-mail...");
                                 await gmailService.SendMessageEmailAsync(match.person, message);
                             }
                         }
-
                         var matchEntity = tableStorageService.GetMatch(matchesTable, match._id);
                         if (matchEntity != null) continue;
                         log.Info("New match! Notifying user by e-mail...");
@@ -79,7 +74,6 @@ namespace TinderFunctionApp
                         log.Info("Saving new match in table storage...");
                         tableStorageService.Insert(matchesTable, new Match(match._id, match.person.name));
                     }
-
                     var recs = await client.GetAsync(Utils.GetRecsUrl());
                     var recsBody = await recs.Content.ReadAsStringAsync();
                     if (!(recsBody.Contains("recs timeout") || recsBody.Contains("recs exhausted")))
@@ -97,8 +91,7 @@ namespace TinderFunctionApp
                                 var superLike = await client.PostAsync(Utils.GetSuperLikeUrl(result._id), null);
                                 if (superLike.StatusCode == HttpStatusCode.OK)
                                 {
-                                    log.Info(
-                                        $"Successfully super liked {result.name} ({Utils.GetGender(result.gender)} age {Utils.GetAge(result.birth_date)}) who is {Utils.GetKmDistance(result.distance_mi)} km away from my current location. {result.name} has {result.photos.Count} photo(s).");
+                                    log.Info($"Successfully super liked {result.name} ({Utils.GetGender(result.gender)} age {Utils.GetAge(result.birth_date)}) who is {Utils.GetKmDistance(result.distance_mi)} km away from my current location. {result.name} has {result.photos.Count} photo(s).");
                                 }
                             }
                             else
@@ -106,25 +99,21 @@ namespace TinderFunctionApp
                                 var like = await client.GetAsync(Utils.GetLikeUrl(result._id));
                                 if (like.StatusCode == HttpStatusCode.OK)
                                 {
-                                    log.Info(
-                                        $"Successfully liked {result.name} ({Utils.GetGender(result.gender)} age {Utils.GetAge(result.birth_date)}) who is {Utils.GetKmDistance(result.distance_mi)} km away from my current location. {result.name} has {result.photos.Count} photo(s).");
+                                    log.Info($"Successfully liked {result.name} ({Utils.GetGender(result.gender)} age {Utils.GetAge(result.birth_date)}) who is {Utils.GetKmDistance(result.distance_mi)} km away from my current location. {result.name} has {result.photos.Count} photo(s).");
                                 }
                             }
-
                             counter++;
                         }
                     }
                     else
                     {
-                        log.Info(
-                            $"Too many queries for new users in a too short period of time. Pausing function for {Convert.ToInt32(config["FunctionPauseMilliseconds"])}ms...");
+                        log.Info($"Too many queries for new users in a too short period of time. Pausing function for {Convert.ToInt32(config["FunctionPauseMilliseconds"])}ms...");
                         Thread.Sleep(Convert.ToInt32(config["FunctionPauseMilliseconds"]));
                     }
 
                     break;
                 case HttpStatusCode.Unauthorized:
-                    log.Info(
-                        $"Unsuccessful authentication with Tinder API using Tinder token. {(int) updates.StatusCode} {updates.ReasonPhrase}. Generating new Tinder token using Facebook token...");
+                    log.Info($"Unsuccessful authentication with Tinder API using Tinder token. {(int) updates.StatusCode} {updates.ReasonPhrase}. Generating new Tinder token using Facebook token...");
                     var response = await client.PostAsJsonAsync(Utils.GetAuthUrl(), new Auth {facebook_id = config["FacebookId"], facebook_token = config["FacebookToken"]});
                     switch (response.StatusCode)
                     {
