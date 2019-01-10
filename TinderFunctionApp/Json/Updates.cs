@@ -75,5 +75,14 @@ namespace TinderFunctionApp.Json
     {
         [DataMember]
         public string message { get; set; }
+
+        [DataMember]
+        public string from { get; set; }
+
+        [DataMember]
+        public string to { get; set; }
+
+        [DataMember]
+        public string created_date { get; set; }
     }
 }

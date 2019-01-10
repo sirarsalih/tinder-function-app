@@ -85,21 +85,11 @@ namespace TinderFunctionApp.Helpers
             return Convert.ToInt32(miles) * 1.6;
         }
 
-        public static string CreateEmailSubject(Person person)
+        public static bool IsRecent(string createdDateTime, DateTime timeToCompare, int aliveDurationMinutes)
         {
-            return $"Tinder match with {person.name} ({GetAge(person.birth_date)})! {person.name} has {person.photos.Count} photo(s)";
-        }
-
-        public static string CreateEmailBody(Person person)
-        {
-            var age = GetAge(person.birth_date);
-            var birthDate = GetBirthDate(person.birth_date);
-            var body = $"{person.name} is {age} years old. Born on {birthDate.ToString("MMMM", CultureInfo.InvariantCulture)} {birthDate.Day}, {birthDate.Year}.";
-            foreach (var photo in person.photos) {
-                var url = photo.processedFiles.First().url;
-                body += $"<br/><br/><img src=\"{url}\">";
-            }
-            return body;
+            var elapsedTime = timeToCompare - DateTime.Parse(createdDateTime, null, DateTimeStyles.RoundtripKind);
+            return (elapsedTime.TotalSeconds > -1 && elapsedTime.TotalSeconds < 0) // up to 1 second before
+                   || (elapsedTime.TotalSeconds >= 0 && Math.Floor(elapsedTime.TotalSeconds) <= aliveDurationMinutes * 60);
         }
     }
 }
