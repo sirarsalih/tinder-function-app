@@ -43,6 +43,18 @@ namespace TinderFunctionApp.Services
             );
         }
 
+        public async Task SendTokenExpirationEmailAsync(string subject, string body)
+        {
+            await SendEmailAsync(
+                _gmailUserName,
+                _gmailAppPassword,
+                _gmailUserName,
+                _gmailUserName,
+                subject,
+                body
+            );
+        }
+
         private string CreateMessageEmailSubject(Person person)
         {
             return $"You got a new message from {person.name} ({Utils.GetAge(person.birth_date)})!";

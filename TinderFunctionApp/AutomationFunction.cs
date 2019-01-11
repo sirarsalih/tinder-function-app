@@ -20,6 +20,8 @@ namespace TinderFunctionApp
 {
     public static class AutomationFunction
     {
+        private static bool _unAuthorizedEmailSent;
+
         [FunctionName("AutomationFunction")]
         public static async Task Run([TimerTrigger("0 */1 * * * *")]TimerInfo myTimer, TraceWriter log, ExecutionContext context)
         {
@@ -47,15 +49,15 @@ namespace TinderFunctionApp
 
         private static async Task AuthenticateAndAutomateAsync(TraceWriter log, HttpClient client, TableStorageService tableStorageService, IConfigurationRoot config, GmailService gmailService)
         {
-            var updates = await client.PostAsJsonAsync(Utils.GetUpdatesUrl(), new Time {last_activity_date = DateTime.UtcNow.AddHours(-1).ToString("yyyy-MM-ddTHH:mm:ssZ")});
+            var updates = await client.PostAsJsonAsync(Utils.GetUpdatesUrl(), new Time { last_activity_date = DateTime.UtcNow.AddHours(-1).ToString("yyyy-MM-ddTHH:mm:ssZ") });
             switch (updates.StatusCode)
             {
                 case HttpStatusCode.OK:
-                    log.Info($"Successful authentication with Tinder API. {(int) updates.StatusCode} {updates.ReasonPhrase}.");
+                    log.Info($"Successful authentication with Tinder API using Tinder token. {(int)updates.StatusCode} {updates.ReasonPhrase}.");
                     var updatesBody = await updates.Content.ReadAsStringAsync();
-                    var ms = new MemoryStream(System.Text.Encoding.ASCII.GetBytes(updatesBody)) {Position = 0};
+                    var ms = new MemoryStream(System.Text.Encoding.ASCII.GetBytes(updatesBody)) { Position = 0 };
                     var ser = new DataContractJsonSerializer(typeof(Updates));
-                    var updatesJson = (Updates) ser.ReadObject(ms);
+                    var updatesJson = (Updates)ser.ReadObject(ms);
                     var matchesTable = tableStorageService.GetCloudTable(Utils.GetMatchesTableName());
                     foreach (var match in updatesJson.matches)
                     {
@@ -80,9 +82,9 @@ namespace TinderFunctionApp
                     {
                         var resultsJson = JToken.Parse(recsBody).Last().ToString();
                         var encloseResultsJson = $"{{{resultsJson}}}";
-                        ms = new MemoryStream(System.Text.Encoding.ASCII.GetBytes(encloseResultsJson)) {Position = 0};
+                        ms = new MemoryStream(System.Text.Encoding.ASCII.GetBytes(encloseResultsJson)) { Position = 0 };
                         ser = new DataContractJsonSerializer(typeof(Results));
-                        var results = (Results) ser.ReadObject(ms);
+                        var results = (Results)ser.ReadObject(ms);
                         var counter = 1;
                         foreach (var result in results.results)
                         {
@@ -112,11 +114,13 @@ namespace TinderFunctionApp
                     }
                     break;
                 case HttpStatusCode.Unauthorized:
-                    log.Info($"Unsuccessful authentication with Tinder API using Tinder token. {(int) updates.StatusCode} {updates.ReasonPhrase}. Generating new Tinder token using Facebook token...");
-                    var response = await client.PostAsJsonAsync(Utils.GetAuthUrl(), new Auth {facebook_id = config["FacebookId"], facebook_token = config["FacebookToken"]});
+                    log.Info($"Unsuccessful authentication with Tinder API using Tinder token. {(int)updates.StatusCode} {updates.ReasonPhrase}. Generating new Tinder token using Facebook token...");
+                    var response = await client.PostAsJsonAsync(Utils.GetAuthUrl(), new Auth { facebook_id = config["FacebookId"], facebook_token = config["FacebookToken"] });
                     switch (response.StatusCode)
                     {
                         case HttpStatusCode.OK:
+                            _unAuthorizedEmailSent = false;
+                            log.Info($"Successful authentication with Tinder API using Facebook token. {(int)updates.StatusCode} {updates.ReasonPhrase}.");
                             var responseBody = await response.Content.ReadAsStringAsync();
                             var tinderToken = JObject.Parse(responseBody).GetValue("token").ToString();
                             client.DefaultRequestHeaders.Remove("X-Auth-Token");
@@ -125,6 +129,13 @@ namespace TinderFunctionApp
                             break;
                         case HttpStatusCode.Unauthorized:
                             log.Info($"Unsuccessful authentication with Tinder API using Facebook token. {(int)response.StatusCode} {response.ReasonPhrase}. Facebook token may have expired and must be regenerated.");
+                            if (!_unAuthorizedEmailSent)
+                            {
+                                await gmailService.SendTokenExpirationEmailAsync(
+                                    "[Tinder function] Unauthorized connection to Tinder API. Facebook token has expired.",
+                                    "The Facebook token has expired, a new token must be generated and used to connect to the Tinder API.");
+                                _unAuthorizedEmailSent = true;
+                            }
                             break;
                     }
                     break;
