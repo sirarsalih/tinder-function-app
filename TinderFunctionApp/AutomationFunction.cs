@@ -49,7 +49,7 @@ namespace TinderFunctionApp
 
         private static async Task AuthenticateAndAutomateAsync(TraceWriter log, HttpClient client, TableStorageService tableStorageService, IConfigurationRoot config, GmailService gmailService)
         {
-            var updates = await client.PostAsJsonAsync(Utils.GetUpdatesUrl(), new Time { last_activity_date = DateTime.UtcNow.AddHours(-1).ToString("yyyy-MM-ddTHH:mm:ssZ") });
+            var updates = await client.PostAsJsonAsync(Utils.GetUpdatesUrl(), new Time { last_activity_date = "" });
             switch (updates.StatusCode)
             {
                 case HttpStatusCode.OK:
@@ -71,8 +71,16 @@ namespace TinderFunctionApp
                         }
                         var matchEntity = tableStorageService.GetMatch(matchesTable, match._id);
                         if (matchEntity != null) continue;
-                        log.Info("New match! Notifying user by e-mail...");
-                        await gmailService.SendMatchEmailAsync(match.person);
+                        log.Info("New match! Getting match profile...");
+                        var user = await client.GetAsync(Utils.GetUserUrl(match.person._id));
+                        var userBody = await user.Content.ReadAsStringAsync();
+                        var userJson = JToken.Parse(userBody).Last().ToString();
+                        var encloseUserJson = $"{{{userJson}}}";
+                        ms = new MemoryStream(System.Text.Encoding.ASCII.GetBytes(encloseUserJson)) { Position = 0 };
+                        ser = new DataContractJsonSerializer(typeof(Profile));
+                        var profile = (Profile)ser.ReadObject(ms);
+                        log.Info("Notifying user by e-mail...");
+                        await gmailService.SendMatchEmailAsync(profile);
                         log.Info("Saving new match in table storage...");
                         tableStorageService.Insert(matchesTable, new Match(match._id, match.person.name));
                     }

@@ -19,15 +19,15 @@ namespace TinderFunctionApp.Services
             _gmailAppPassword = gmailAppPassword;
         }
 
-        public async Task SendMatchEmailAsync(Person person)
+        public async Task SendMatchEmailAsync(Profile profile)
         {
             await SendEmailAsync(
                 _gmailUserName,
                 _gmailAppPassword,
                 _gmailUserName,
                 _gmailUserName,
-                CreateMatchEmailSubject(person),
-                CreateMatchEmailBody(person)
+                CreateMatchEmailSubject(profile),
+                CreateMatchEmailBody(profile)
             );
         }
 
@@ -65,17 +65,49 @@ namespace TinderFunctionApp.Services
             return $"{person.name} says \"{message.message}\"";
         }
 
-        private static string CreateMatchEmailSubject(Person person)
+        private static string CreateMatchEmailSubject(Profile profile)
         {
-            return $"Tinder match with {person.name} ({Utils.GetAge(person.birth_date)})! {person.name} has {person.photos.Count} photo(s)";
+            return $"Tinder match with {profile.results.name} ({Utils.GetAge(profile.results.birth_date)})! {profile.results.name} has {profile.results.photos.Count} photo(s)";
         }
 
-        private static string CreateMatchEmailBody(Person person)
+        private static string CreateMatchEmailBody(Profile profile)
         {
-            var age = Utils.GetAge(person.birth_date);
-            var birthDate = Utils.GetBirthDate(person.birth_date);
-            var body = $"{person.name} is {age} years old. Born on {birthDate.ToString("MMMM", CultureInfo.InvariantCulture)} {birthDate.Day}, {birthDate.Year}.";
-            foreach (var photo in person.photos) {
+            var age = Utils.GetAge(profile.results.birth_date);
+            var birthDate = Utils.GetBirthDate(profile.results.birth_date);
+            var body = $"{profile.results.name} is {age} years old. " +
+                       $"Born on {birthDate.ToString("MMMM", CultureInfo.InvariantCulture)} {birthDate.Day}, {birthDate.Year} " +
+                       $"and is {Utils.GetKmDistance(profile.results.distance_mi)} away. ";
+            if (profile.results.schools.Count > 0)
+            {
+                body += "Studies or has studied at ";
+                foreach (var school in profile.results.schools)
+                {
+                    body += $"{school.name}, ";
+                }
+                body = body.Remove(body.Length - 2) + ". ";
+            }
+            else if (profile.results.jobs.Count > 0)
+            {
+                body += "Works ";
+                foreach (var job in profile.results.jobs)
+                {
+                    if (!string.IsNullOrWhiteSpace(job.title?.name) && !string.IsNullOrWhiteSpace(job.company?.name))
+                    {
+                        body += $"as a {job.title.name} at {job.company.name}, ";
+                    }
+                    else if (string.IsNullOrWhiteSpace(job.title?.name))
+                    {
+                        body += $"at {job.company?.name}, ";
+                    }
+                    else if (string.IsNullOrWhiteSpace(job.company?.name))
+                    {
+                        body += $"as a {job.title.name}, ";
+                    }
+                }
+                body = body.Remove(body.Length - 2) + ". ";
+            }
+            foreach (var photo in profile.results.photos)
+            {
                 var url = photo.processedFiles.First().url;
                 body += $"<br/><br/><img src=\"{url}\">";
             }

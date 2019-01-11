@@ -42,6 +42,11 @@ namespace TinderFunctionApp.Helpers
             return "https://api.gotinder.com/user/matches/_id".Replace("_id", id);
         }
 
+        public static string GetUserUrl(string id)
+        {
+            return "https://api.gotinder.com/user/_id}".Replace("_id", id);
+        }
+
         public static string GetMatchesTableName()
         {
             return "Matches";
