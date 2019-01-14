@@ -64,13 +64,11 @@ namespace TinderFunctionApp
                         foreach (var message in match.messages)
                         {
                             var messageEntity = tableStorageService.GetMessage(messagesTable, message._id, match.person._id);
-                            if (message.from != config["TinderUserId"] && messageEntity == null)
-                            {
-                                log.Info($"New message from {match.person.name} ({Utils.GetAge(match.person.birth_date)}). Notifying user by e-mail...");
-                                await gmailService.SendMessageEmailAsync(match.person, message);
-                                log.Info("Saving new message in table storage...");
-                                tableStorageService.Insert(messagesTable, new TableEntities.Message(message._id, match.person._id));
-                            }
+                            if (message.from == config["TinderUserId"] || messageEntity != null) continue;
+                            log.Info($"New message from {match.person.name} ({Utils.GetAge(match.person.birth_date)}). Notifying user by e-mail...");
+                            await gmailService.SendMessageEmailAsync(match.person, message);
+                            log.Info("Saving new message in table storage...");
+                            tableStorageService.Insert(messagesTable, new TableEntities.Message(message._id, match.person._id));
                         }
                         var matchesTable = tableStorageService.GetCloudTable(Utils.GetMatchesTableName());
                         var matchEntity = tableStorageService.GetMatch(matchesTable, match._id);
