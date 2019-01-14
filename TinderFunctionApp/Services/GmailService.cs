@@ -51,7 +51,7 @@ namespace TinderFunctionApp.Services
                 _gmailUserName,
                 _gmailUserName,
                 CreateMessageEmailSubject(person),
-                CreateMessageEmailBody(message)
+                CreateMessageEmailBody(person, message)
             );
         }
 
@@ -72,9 +72,9 @@ namespace TinderFunctionApp.Services
             return $"[Tinder function] You got a new message from {person.name} ({Utils.GetAge(person.birth_date)})";
         }
 
-        private string CreateMessageEmailBody(Message message)
+        private string CreateMessageEmailBody(Person person, Message message)
         {
-            return $"{message.message}";
+            return $"{person.name}: {message.message}";
         }
 
         private static string CreateMatchEmailSubject(Profile profile)

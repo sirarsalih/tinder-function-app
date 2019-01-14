@@ -55,7 +55,7 @@ namespace TinderFunctionApp
                 case HttpStatusCode.OK:
                     log.Info($"Successful authentication with Tinder API using Tinder token. {(int)updates.StatusCode} {updates.ReasonPhrase}.");
                     var updatesBody = await updates.Content.ReadAsStringAsync();
-                    var ms = new MemoryStream(System.Text.Encoding.ASCII.GetBytes(updatesBody)) { Position = 0 };
+                    var ms = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(updatesBody)) { Position = 0 };
                     var ser = new DataContractJsonSerializer(typeof(Updates));
                     var updatesJson = (Updates)ser.ReadObject(ms);
                     var messagesTable = tableStorageService.GetCloudTable(Utils.GetMessagesTableName());
@@ -83,7 +83,7 @@ namespace TinderFunctionApp
                                 var userBody = await user.Content.ReadAsStringAsync();
                                 var userJson = JToken.Parse(userBody).Last().ToString();
                                 var encloseUserJson = $"{{{userJson}}}";
-                                ms = new MemoryStream(System.Text.Encoding.ASCII.GetBytes(encloseUserJson)) { Position = 0 };
+                                ms = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(encloseUserJson)) { Position = 0 };
                                 ser = new DataContractJsonSerializer(typeof(Profile));
                                 var profile = (Profile)ser.ReadObject(ms);
                                 log.Info("Notifying user by e-mail including all match profile data...");
@@ -103,7 +103,7 @@ namespace TinderFunctionApp
                     {
                         var resultsJson = JToken.Parse(recsBody).Last().ToString();
                         var encloseResultsJson = $"{{{resultsJson}}}";
-                        ms = new MemoryStream(System.Text.Encoding.ASCII.GetBytes(encloseResultsJson)) { Position = 0 };
+                        ms = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(encloseResultsJson)) { Position = 0 };
                         ser = new DataContractJsonSerializer(typeof(Results));
                         var results = (Results)ser.ReadObject(ms);
                         var counter = 1;
