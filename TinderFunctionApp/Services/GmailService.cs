@@ -31,6 +31,18 @@ namespace TinderFunctionApp.Services
             );
         }
 
+        public async Task SendMatchEmailAsync(Person person)
+        {
+            await SendEmailAsync(
+                _gmailUserName,
+                _gmailAppPassword,
+                _gmailUserName,
+                _gmailUserName,
+                CreateMatchEmailSubject(person),
+                CreateMatchEmailBody(person)
+            );
+        }
+
         public async Task SendMessageEmailAsync(Person person, Message message)
         {
             await SendEmailAsync(
@@ -39,7 +51,7 @@ namespace TinderFunctionApp.Services
                 _gmailUserName,
                 _gmailUserName,
                 CreateMessageEmailSubject(person),
-                CreateMessageEmailBody(person, message)
+                CreateMessageEmailBody(message)
             );
         }
 
@@ -57,17 +69,22 @@ namespace TinderFunctionApp.Services
 
         private string CreateMessageEmailSubject(Person person)
         {
-            return $"You got a new message from {person.name} ({Utils.GetAge(person.birth_date)})!";
+            return $"[Tinder function] You got a new message from {person.name} ({Utils.GetAge(person.birth_date)})";
         }
 
-        private string CreateMessageEmailBody(Person person, Message message)
+        private string CreateMessageEmailBody(Message message)
         {
-            return $"{person.name} says \"{message.message}\"";
+            return $"{message.message}";
         }
 
         private static string CreateMatchEmailSubject(Profile profile)
         {
-            return $"Tinder match with {profile.results.name} ({Utils.GetAge(profile.results.birth_date)})! {profile.results.name} has {profile.results.photos.Count} photo(s)";
+            return $"[Tinder function] Match with {profile.results.name} ({Utils.GetAge(profile.results.birth_date)})! {profile.results.name} has {profile.results.photos.Count} photo(s)";
+        }
+
+        private string CreateMatchEmailSubject(Person person)
+        {
+            return $"[Tinder function] Match with {person.name} ({Utils.GetAge(person.birth_date)})! {person.name} has {person.photos.Count} photo(s)";
         }
 
         private static string CreateMatchEmailBody(Profile profile)
@@ -107,6 +124,19 @@ namespace TinderFunctionApp.Services
                 body = body.Remove(body.Length - 2) + ". ";
             }
             foreach (var photo in profile.results.photos)
+            {
+                var url = photo.processedFiles.First().url;
+                body += $"<br/><br/><img src=\"{url}\">";
+            }
+            return body;
+        }
+
+        private static string CreateMatchEmailBody(Person person)
+        {
+            var age = Utils.GetAge(person.birth_date);
+            var birthDate = Utils.GetBirthDate(person.birth_date);
+            var body = $"{person.name} is {age} years old. Born on {birthDate.ToString("MMMM", CultureInfo.InvariantCulture)} {birthDate.Day}, {birthDate.Year}.";
+            foreach (var photo in person.photos)
             {
                 var url = photo.processedFiles.First().url;
                 body += $"<br/><br/><img src=\"{url}\">";

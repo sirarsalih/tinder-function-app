@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
+using TinderFunctionApp.TableEntities;
 using Match = TinderFunctionApp.TableEntities.Match;
 
 namespace TinderFunctionApp.Services
@@ -43,6 +44,12 @@ namespace TinderFunctionApp.Services
         {
             var retrieveOperation = TableOperation.Retrieve<Match>(partitionKey, rowKey);
             return (Match)cloudTable.Execute(retrieveOperation).Result;
+        }
+
+        public Message GetMessage(CloudTable cloudTable, string partitionKey, string rowKey)
+        {
+            var retrieveOperation = TableOperation.Retrieve<Message>(partitionKey, rowKey);
+            return (Message)cloudTable.Execute(retrieveOperation).Result;
         }
 
         public async void DeleteAsync(CloudTable cloudTable, TableEntity tableEntity)

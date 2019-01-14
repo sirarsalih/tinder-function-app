@@ -52,6 +52,11 @@ namespace TinderFunctionApp.Helpers
             return "Matches";
         }
 
+        public static string GetMessagesTableName()
+        {
+            return "Messages";
+        }
+
         public static int GetAge(string birthDate)
         {
             var dob = GetBirthDate(birthDate);
@@ -88,13 +93,6 @@ namespace TinderFunctionApp.Helpers
         public static double GetKmDistance(string miles)
         {
             return Convert.ToInt32(miles) * 1.6;
-        }
-
-        public static bool IsRecent(string createdDateTime, DateTime timeToCompare, int aliveDurationMinutes)
-        {
-            var elapsedTime = timeToCompare - DateTime.Parse(createdDateTime, null, DateTimeStyles.RoundtripKind);
-            return (elapsedTime.TotalSeconds > -1 && elapsedTime.TotalSeconds < 0) // up to 1 second before
-                   || (elapsedTime.TotalSeconds >= 0 && Math.Floor(elapsedTime.TotalSeconds) <= aliveDurationMinutes * 60);
         }
     }
 }

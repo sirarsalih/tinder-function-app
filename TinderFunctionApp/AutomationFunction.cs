@@ -58,29 +58,42 @@ namespace TinderFunctionApp
                     var ms = new MemoryStream(System.Text.Encoding.ASCII.GetBytes(updatesBody)) { Position = 0 };
                     var ser = new DataContractJsonSerializer(typeof(Updates));
                     var updatesJson = (Updates)ser.ReadObject(ms);
-                    var matchesTable = tableStorageService.GetCloudTable(Utils.GetMatchesTableName());
+                    var messagesTable = tableStorageService.GetCloudTable(Utils.GetMessagesTableName());
                     foreach (var match in updatesJson.matches)
                     {
                         foreach (var message in match.messages)
                         {
-                            if (message.from != config["TinderUserId"] && Utils.IsRecent(message.created_date, DateTime.Now, 3))
+                            var messageEntity = tableStorageService.GetMessage(messagesTable, message._id, match.person._id);
+                            if (message.from != config["TinderUserId"] && messageEntity == null)
                             {
                                 log.Info($"New message from {match.person.name} ({Utils.GetAge(match.person.birth_date)}). Notifying user by e-mail...");
                                 await gmailService.SendMessageEmailAsync(match.person, message);
+                                log.Info("Saving new message in table storage...");
+                                tableStorageService.Insert(messagesTable, new TableEntities.Message(message._id, match.person._id));
                             }
                         }
+                        var matchesTable = tableStorageService.GetCloudTable(Utils.GetMatchesTableName());
                         var matchEntity = tableStorageService.GetMatch(matchesTable, match._id);
                         if (matchEntity != null) continue;
-                        log.Info("New match! Getting match profile...");
+                        log.Info("New match! Attempting to get match profile...");
                         var user = await client.GetAsync(Utils.GetUserUrl(match.person._id));
-                        var userBody = await user.Content.ReadAsStringAsync();
-                        var userJson = JToken.Parse(userBody).Last().ToString();
-                        var encloseUserJson = $"{{{userJson}}}";
-                        ms = new MemoryStream(System.Text.Encoding.ASCII.GetBytes(encloseUserJson)) { Position = 0 };
-                        ser = new DataContractJsonSerializer(typeof(Profile));
-                        var profile = (Profile)ser.ReadObject(ms);
-                        log.Info("Notifying user by e-mail...");
-                        await gmailService.SendMatchEmailAsync(profile);
+                        switch (user.StatusCode)
+                        {
+                            case HttpStatusCode.OK:
+                                var userBody = await user.Content.ReadAsStringAsync();
+                                var userJson = JToken.Parse(userBody).Last().ToString();
+                                var encloseUserJson = $"{{{userJson}}}";
+                                ms = new MemoryStream(System.Text.Encoding.ASCII.GetBytes(encloseUserJson)) { Position = 0 };
+                                ser = new DataContractJsonSerializer(typeof(Profile));
+                                var profile = (Profile)ser.ReadObject(ms);
+                                log.Info("Notifying user by e-mail including all match profile data...");
+                                await gmailService.SendMatchEmailAsync(profile);
+                                break;
+                            default:
+                                log.Info("Did not succeed to get match profile. Notifying user by e-mail including limited match profile data...");
+                                await gmailService.SendMatchEmailAsync(match.person);
+                                break;
+                        }
                         log.Info("Saving new match in table storage...");
                         tableStorageService.Insert(matchesTable, new Match(match._id, match.person.name));
                     }
@@ -141,7 +154,7 @@ namespace TinderFunctionApp
                             {
                                 await gmailService.SendTokenExpirationEmailAsync(
                                     "[Tinder function] Unauthorized connection to Tinder API. Facebook token has expired.",
-                                    "The Facebook token has expired, a new token must be generated and used to connect to the Tinder API. Read on token generation here: https://github.com/sirarsalih/tinder-function-app");
+                                    "Tinder automation has stopped working. The Facebook token has expired, a new token must be generated and used to connect to the Tinder API. Read on token generation here: https://github.com/sirarsalih/tinder-function-app");
                                 _unAuthorizedEmailSent = true;
                             }
                             break;
