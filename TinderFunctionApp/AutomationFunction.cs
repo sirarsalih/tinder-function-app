@@ -73,7 +73,7 @@ namespace TinderFunctionApp
                         var matchesTable = tableStorageService.GetCloudTable(Utils.GetMatchesTableName());
                         var matchEntity = tableStorageService.GetMatch(matchesTable, match._id);
                         if (matchEntity != null) continue;
-                        log.Info("New match! Attempting to get match profile...");
+                        log.Info($"Match with {match.person.name} ({Utils.GetAge(match.person.birth_date)})! Attempting to get match profile...");
                         var user = await client.GetAsync(Utils.GetUserUrl(match.person._id));
                         switch (user.StatusCode)
                         {
