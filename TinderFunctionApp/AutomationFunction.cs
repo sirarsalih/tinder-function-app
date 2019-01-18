@@ -21,6 +21,8 @@ namespace TinderFunctionApp
     public static class AutomationFunction
     {
         private static bool _unAuthorizedEmailSent;
+        private static string _facebookToken;
+        private static string _tinderToken;
 
         [FunctionName("AutomationFunction")]
         public static async Task Run([TimerTrigger("0 */1 * * * *")]TimerInfo myTimer, TraceWriter log, ExecutionContext context)
@@ -36,7 +38,7 @@ namespace TinderFunctionApp
                      .Build();
                     var tableStorageService = new TableStorageService(config["StorageAccountName"], config["StorageAccountKey"]);
                     var gmailService = new GmailService(config["GmailUserName"], config["GmailAppPassword"]);
-                    client.DefaultRequestHeaders.Add("X-Auth-Token", config["TinderToken"]);
+                    client.DefaultRequestHeaders.Add("X-Auth-Token", _tinderToken);
                     client.DefaultRequestHeaders.Add("User-Agent", "Tinder/7.5.3 (iPhone; iOS 10.3.2; Scale/2.00)");
                     await AuthenticateAndAutomateAsync(log, client, tableStorageService, config, gmailService);
                 }
@@ -134,16 +136,17 @@ namespace TinderFunctionApp
                     break;
                 case HttpStatusCode.Unauthorized:
                     log.Info($"Unsuccessful authentication with Tinder API using Tinder token. {(int)updates.StatusCode} {updates.ReasonPhrase}. Generating new Tinder token using Facebook token...");
-                    var response = await client.PostAsJsonAsync(Utils.GetAuthUrl(), new Auth { facebook_id = config["FacebookId"], facebook_token = config["FacebookToken"] });
+                    _facebookToken = FacebookHelper.GetFbToken(config["FacebookUserName"], config["FacebookUserPassword"]);
+                    var response = await client.PostAsJsonAsync(Utils.GetAuthUrl(), new Auth { facebook_id = config["FacebookId"], facebook_token = _facebookToken });
                     switch (response.StatusCode)
                     {
                         case HttpStatusCode.OK:
                             _unAuthorizedEmailSent = false;
                             log.Info($"Successful authentication with Tinder API using Facebook token. {(int)response.StatusCode} {response.ReasonPhrase}.");
                             var responseBody = await response.Content.ReadAsStringAsync();
-                            var tinderToken = JObject.Parse(responseBody).GetValue("token").ToString();
+                            _tinderToken = JObject.Parse(responseBody).GetValue("token").ToString();
                             client.DefaultRequestHeaders.Remove("X-Auth-Token");
-                            client.DefaultRequestHeaders.Add("X-Auth-Token", tinderToken);
+                            client.DefaultRequestHeaders.Add("X-Auth-Token", _tinderToken);
                             await AuthenticateAndAutomateAsync(log, client, tableStorageService, config, gmailService);
                             break;
                         case HttpStatusCode.Unauthorized:

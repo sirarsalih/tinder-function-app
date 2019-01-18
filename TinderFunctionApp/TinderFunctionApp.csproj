@@ -11,6 +11,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0" />
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.24" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="SimpleBrowser" Version="0.5.79" />
     <PackageReference Include="WindowsAzure.Storage" Version="8.7.0" />
   </ItemGroup>
   <ItemGroup>
