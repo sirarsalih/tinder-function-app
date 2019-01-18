@@ -13,13 +13,16 @@ namespace TinderFunctionApp.Helpers
         {
             _browser.UserAgent = USER_AGENT;
             _browser.Navigate(URL);
+
+            if (!_browser.CurrentHtml.Contains("__CONFIRM__"))
+            {
+                // Enters e-mail, password and logs in
+                _browser.Find(ElementType.TextField, FindBy.Name, "email").Value = email;
+                _browser.Find(ElementType.TextField, FindBy.Name, "pass").Value = password;
+                _browser.Find(ElementType.Button, FindBy.Name, "login").Click(); 
+            }
             
-            // Enters email, password and logins
-            _browser.Find(ElementType.TextField, FindBy.Name, "email").Value = email;
-            _browser.Find(ElementType.TextField, FindBy.Name, "pass").Value = password;
-            _browser.Find(ElementType.Button, FindBy.Name, "login").Click();
-            
-            // If SMS authentication is enabled, after aprooving from the browser manually, clicks ok to continue            
+            // If two-factor auth is enabled, user gets a notification on phone and has to click ok
             while (!_browser.CurrentHtml.Contains("__CONFIRM__"))
             {
                 _browser.Navigate(_browser.Url);

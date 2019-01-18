@@ -154,8 +154,8 @@ namespace TinderFunctionApp
                             if (!_unAuthorizedEmailSent)
                             {
                                 await gmailService.SendTokenExpirationEmailAsync(
-                                    "[Tinder function] Unauthorized connection to Tinder API. Facebook token has expired.",
-                                    "Tinder automation has stopped working. The Facebook token has expired, a new token must be generated and used to connect to the Tinder API. Read on token generation here: https://github.com/sirarsalih/tinder-function-app");
+                                    "[Tinder function] Unauthorized connection to Tinder API.",
+                                    "Tinder automation has stopped working. Check the Tinder function code at: https://github.com/sirarsalih/tinder-function-app");
                                 _unAuthorizedEmailSent = true;
                             }
                             break;
