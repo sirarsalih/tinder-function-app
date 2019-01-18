@@ -139,7 +139,7 @@ namespace TinderFunctionApp
                     {
                         case HttpStatusCode.OK:
                             _unAuthorizedEmailSent = false;
-                            log.Info($"Successful authentication with Tinder API using Facebook token. {(int)updates.StatusCode} {updates.ReasonPhrase}.");
+                            log.Info($"Successful authentication with Tinder API using Facebook token. {(int)response.StatusCode} {response.ReasonPhrase}.");
                             var responseBody = await response.Content.ReadAsStringAsync();
                             var tinderToken = JObject.Parse(responseBody).GetValue("token").ToString();
                             client.DefaultRequestHeaders.Remove("X-Auth-Token");
